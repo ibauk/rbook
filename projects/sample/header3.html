@@ -5,12 +5,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" type="text/css" href="css/reboot.css">
-        {{if .Landscape}}
-        <link rel="stylesheet" type="text/css" href="css/a4landscape.css">
-        {{else}}
         <link rel="stylesheet" type="text/css" href="css/a4portrait.css">
-        {{end}}
-        <title>{{.Title}}</title>
+        <title>Bonuses</title>
         <style>
                 body {
                         font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -146,7 +142,7 @@
                 }
 
                 .left   { clear: both; float: left; }
-                .right  { float: right; }
+                .right  { float: left; }
 
                 .signboxes {
                         border-spacing: 1em;
@@ -154,7 +150,7 @@
 
                 .bonus      { margin-bottom: 1em; margin-top: 1em; padding: 2em; page-break-inside: avoid;}
                 .BonusID    { display: inline-block; width: 3em; }
-                .Title      { display: inline-block; width: 18em; font-style: italic; }
+                .Title      { display: inline-block; width: 10em; font-style: italic; }
                 .Points     { display: inline-block; width: 5em; font-weight: bold; border: solid; padding: 2px; text-align: center; }
                 .tenpct     { background: lightgray; }
                 .example    { border: dotted; padding: 15px; }
@@ -164,11 +160,12 @@
                 .bonusimage { display: block; }
                 .bonusimage img    {
                         
-                        width: 30em;
+                        width: 15em;
                 }
 
                 #frontpage { 
-                        background: blue; color: gold; page-break-after: always; 
+                        border: double;
+                        color: blue; page-break-after: always; 
                         width: 90%; height: 90%; margin-left: auto; margin-right: auto;
                         margin-top: 2cm;
                 }

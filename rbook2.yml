@@ -3,8 +3,18 @@ imagefolder: \sm-installs\testmodel\images\bonuses
 
 event: 2022 Invictus Tour
 
-headers: [ frontpage, header2, walkhdr]
+sections: [ frontpage, header3, walkhdr, stream.bonuses, footer]
 streams:
-  - { streamid: bonuses, wherestring: BonusID NOT LIKE '%-' AND BonusID <='14', bonusorder: BonusID, maxperline: 2 }
-#  - { streamid: tenpct, wherestring: BonusID LIKE '%-', bonusorder: BonusID }
+  - { 
+      streamid:     bonuses, 
+      type:         bonus,
+      wherestring:  BonusID NOT LIKE '%-' AND BonusID <='14',
+      bonusorder:   BonusID,
+      maxperline:   3
+    }
+#  - { 
+#      streamid:     tenpct,
+#      wherestring:  BonusID LIKE '%-', 
+#      bonusorder: BonusID 
+#    }
 

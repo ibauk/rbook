@@ -1,6 +1,6 @@
 <div class="bonus {{.StreamID}}{{if .ClearFloat}} Left{{else}} right{{end}}">
     <span class="BonusID">{{.BonusID}}</span> <span class="Title">{{.Title}}</span> <span class="Points">{{.Points}}</span>
     <span class="bonusimage">
-        <img src="projects/sample/images/{{.BonusID}}.png" alt="{{.BonusID}}"/>
+        <img src="{{.ImagePath}}{{.BonusID}}.png" alt="{{.BonusID}}"/>
     </span>
 </div>

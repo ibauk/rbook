@@ -1,10 +1,44 @@
+# rbook.yml
+#
+# This is the default project for use with RBook
+#
+
+
+title: 2022 Invictus Tour
+
+description: A4 portrait, 2 column photos
+
+
+# Standard filepath specification, relative to CWD
+projectfolder: projects\sample\
+outputfolder: 
 database: \sm-installs\testmodel\sm\scoremaster.db
-imagefolder: \sm-installs\testmodel\images\bonuses
 
-event: 2022 Invictus Tour
+# URL format, relative to output folder
+imagefolder: projects/sample/images/
 
-headers: [ frontpage, header, walkhdr]
+# default is portrait
+landscape: false
+
+
+# Each entry in sections is the name of a static template with limited
+# configuration variables. Entries starting with 'stream.' refer to
+# streams which process either bonuses or combos. Streams are defined
+# below.
+sections: [ frontpage, header, walkhdr, stream.bonuses, footer]
+
+# StreamID is the name of the template file.
 streams:
-  - { streamid: bonuses, wherestring: BonusID NOT LIKE '%-' AND BonusID <='14', bonusorder: BonusID, maxperline: 2 }
-#  - { streamid: tenpct, wherestring: BonusID LIKE '%-', bonusorder: BonusID }
+  - { 
+      streamid:     bonuses, 
+      type:         bonus,
+      wherestring:  BonusID NOT LIKE '%-' AND BonusID <='14',
+      bonusorder:   BonusID,
+      maxperline:   2
+    }
+#  - { 
+#      streamid:     tenpct,
+#      wherestring:  BonusID LIKE '%-', 
+#      bonusorder: BonusID 
+#    }
 

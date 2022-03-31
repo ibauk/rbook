@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	yaml "gopkg.in/yaml.v2"
@@ -18,30 +19,36 @@ const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
 
-var a5 = flag.Bool("a5", false, "Format for A5 rather than A4")
 var yml = flag.String("cfg", "rbook.yml", "Name of the YAML configuration")
-var doc = flag.String("project", "sample", "The name of the project to be produced")
 var showusage = flag.Bool("?", false, "Show this help")
 var outputfile = flag.String("to", "output.html", "Output filename")
 
 var DBH *sql.DB
 var OUTF *os.File
 
-var projectFolder string = "projects"
+const type_bonus = "bonus"
+const type_combo = "combo"
+const type_static = "static"
+const stream_prefix = "stream"
 
 type BonusStream struct {
 	StreamID    string `yaml:"streamid"`
+	Type        string `yaml:"type"` // bonus, combo, static
 	WhereString string `yaml:"wherestring"`
 	BonusOrder  string `yaml:"bonusorder"`
 	MaxPerLine  int    `yaml:"maxperline"`
 }
 
 var CFG struct {
-	Event       string        `yaml:"event"`
-	Database    string        `yaml:"database"`
-	Imagefolder string        `yaml:"imagefolder"`
-	Headers     []string      `yaml:"headers"`
-	Streams     []BonusStream `yaml:"streams"`
+	Title         string        `yaml:"title"`
+	Description   string        `yaml:"description"`
+	ProjectFolder string        `yaml:"projectfolder"`
+	OutputFolder  string        `yaml:"outputfolder"`
+	Database      string        `yaml:"database"`
+	Imagefolder   string        `yaml:"imagefolder"`
+	Sections      []string      `yaml:"sections"`
+	Streams       []BonusStream `yaml:"streams"`
+	Landscape     bool          `yaml:"landscape"`
 }
 
 type Bonus struct {
@@ -64,6 +71,7 @@ type Bonus struct {
 	Cat9       int
 	ClearFloat bool
 	StreamID   string
+	ImagePath  string
 }
 
 func newBonus() *Bonus {
@@ -75,6 +83,7 @@ func newBonus() *Bonus {
 	b.Coords = ""
 	b.Image = ""
 	b.ClearFloat = false
+	b.ImagePath = CFG.Imagefolder
 
 	return &b
 
@@ -105,7 +114,7 @@ func init() {
 
 func loadConfig() {
 
-	configPath := *yml + ".yml"
+	configPath := *yml
 
 	if !fileExists(configPath) {
 		fmt.Printf("Can't find config file %v\n", configPath)
@@ -124,12 +133,16 @@ func loadConfig() {
 		panic(err)
 	}
 
+	fmt.Printf("CFG now reads %v\n\n", CFG.Imagefolder)
 }
 func main() {
 
+	var xfile string
+
 	fmt.Printf("%v\nCopyright (c) 2022 Bob Stammers\n", apptitle)
-	fmt.Printf("Event: %v\nGenerating %v into %v\n", CFG.Event, *doc, *outputfile)
-	OUTF, _ = os.Create(*outputfile)
+	xfile = filepath.Join(CFG.OutputFolder, *outputfile)
+	fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
+	OUTF, _ = os.Create(filepath.Join(CFG.OutputFolder, *outputfile))
 	defer OUTF.Close()
 	var err error
 	DBH, err = sql.Open("sqlite3", CFG.Database)
@@ -139,14 +152,33 @@ func main() {
 	defer DBH.Close()
 
 	//fmt.Printf("YAML:\n%v\n\n", CFG)
-	var xfile string
 
-	for i := 0; i < len(CFG.Headers); i++ {
+	for i := 0; i < len(CFG.Sections); i++ {
 
-		xfile = filepath.Join(projectFolder, *doc, CFG.Headers[i]+".html")
-		emitTopTail(OUTF, xfile)
+		sf := strings.Split(CFG.Sections[i], ".")
+		if len(sf) < 2 || sf[0] != stream_prefix {
+
+			xfile = filepath.Join(CFG.ProjectFolder, sf[0]+".html")
+
+			emitTopTail(OUTF, xfile)
+			continue
+		}
+		for sx, v := range CFG.Streams {
+			if v.StreamID == sf[1] {
+				if v.Type == type_combo {
+					emitCombos(sx, sf[1])
+				} else {
+					emitBonuses(sx, sf[1])
+				}
+				break
+			}
+		}
 
 	}
+
+}
+
+func emitBonuses(s int, sf string) {
 
 	for s := 0; s < len(CFG.Streams); s++ {
 		sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
@@ -176,18 +208,18 @@ func main() {
 
 			B.StreamID = CFG.Streams[s].StreamID
 
-			if *a5 {
-				B.ClearFloat = NRex%2 == 0
-			}
-			xfile = filepath.Join(projectFolder, *doc, CFG.Streams[s].StreamID+".html")
+			B.ClearFloat = NRex%CFG.Streams[s].MaxPerLine == 0
+			B.ImagePath = CFG.Imagefolder
+
+			xfile := filepath.Join(CFG.ProjectFolder, sf+".html")
 			if !fileExists(xfile) {
-				fmt.Printf("Stream %v has not template %v\n", CFG.Streams[s].StreamID, xfile)
+				fmt.Printf("Stream %v has no template %v\n", CFG.Streams[s].StreamID, xfile)
 				rows.Close()
-				continue
+				return
 			}
 			t, err := template.ParseFiles(xfile)
 			if err != nil {
-				fmt.Printf("new %v\n", err)
+				fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 			}
 			err = t.Execute(OUTF, B)
 			if err != nil {
@@ -198,15 +230,21 @@ func main() {
 		fmt.Printf("%v bonus records processed\n", NRex)
 		rows.Close()
 	}
-	xfile = filepath.Join(projectFolder, *doc, "footer.html")
-	emitTopTail(OUTF, xfile)
+}
+
+func emitCombos(s int, sf string) {
+
 }
 
 func emitTopTail(F *os.File, xfile string) {
 
-	html, err := os.ReadFile(xfile)
+	html, err := template.ParseFiles(xfile)
 	if err != nil {
-		fmt.Printf("new %v\n", err)
+		fmt.Printf("Error (%v) in static file %v\n", err, xfile)
 	}
-	F.WriteString(string(html))
+	err = html.Execute(F, CFG)
+	if err != nil {
+		fmt.Printf("x %v\n", err)
+	}
+
 }
