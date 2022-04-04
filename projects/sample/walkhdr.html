@@ -9,15 +9,21 @@
             </tr>
             <tr>
                 <td></td>
-                <td colspan="3"><img src="projects/sample/images/sample.jpg" alt=""/></td>
+                <td colspan="3"><img src="{{.ImageFolder}}sample.jpg" alt=""/></td>
                 <td> 21  = Bonus code<br><br> Overbecks = Bonus name<br><br> 65 = Bonus points</td>
             </tr>
         </table>
     </p>
-    <p>Your rally flag must be in every picture.</p>
-    <p>Take the same picture as in this book.</p>
-    <p><img src="projects/sample/images/alertalert.png" alt="!" class="icon"/> Read the Notes!</p>
-    <p><img src="projects/sample/images/alertface.png" alt="!" class="icon"/> Put the whole of your face in the picture</p>
+    <p><strong>Your rally flag must be in every picture.</strong></p>
+    <ul class="legend">
+        <li>Take the same picture as shown in this book.</li>
+        <li><img src="{{.ImageFolder}}alertalert.png" alt="!" class="icon"/> Read the Notes carefully!</li>
+        <li><img src="{{.ImageFolder}}alertface.png" alt="F" class="icon"/> Put the whole of your face in the picture. Helmet off or flipped up.</li>
+        <li><img src="{{.ImageFolder}}alertbike.png" alt="B" class="icon"/> Put the whole of your bike in the picture</li>
+        <li><img src="{{.ImageFolder}}alertdaylight.png" alt="D" class="icon"/> Daylight only, sunrise to sunset</li>
+        <li><img src="{{.ImageFolder}}alertrestricted.png" alt="R" class="icon"/> Restricted access</li>
+        <li><img src="{{.ImageFolder}}alertreceipt.png" alt="T" class="icon"/> Obtain a receipt</li>
+                </ul>
     <h2>Claims</h2>
     <p>Email your claims to <span class="email">ibaukebc@gmail.com</span></p>
     <p>The <strong>Subject:</strong> line of the email should contain the four fields 

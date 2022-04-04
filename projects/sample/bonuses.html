@@ -1,6 +1,16 @@
-<div class="bonus {{.StreamID}}{{if .ClearFloat}} Left{{else}} right{{end}}">
-    <span class="BonusID">{{.BonusID}}</span> <span class="Title">{{.Title}}</span> <span class="Points">{{.Points}}</span>
+<div class="bonus {{.StreamId}}{{if .NewLine}} Left{{else}} right{{end}}">
+    <span class="BonusID">{{.BonusID}}</span> <span class="Title">{{.Title}}</span>
+    <span class="flags">
+        {{if .AlertA}}<img class="icon" src="{{.ImagePath}}alertalert.png" alt="A"/>{{end}}
+        {{if .AlertF}}<img class="icon" src="{{.ImagePath}}alertface.png" alt="F"/>{{end}}
+        {{if .AlertB}}<img class="icon" src="{{.ImagePath}}alertbike.png" alt="B"/>{{end}}
+        {{if .AlertT}}<img class="icon" src="{{.ImagePath}}alertreceipt.png" alt="T"/>{{end}}
+        {{if .AlertR}}<img class="icon" src="{{.ImagePath}}alertrestricted.png" alt="R"/>{{end}}
+        {{if .AlertD}}<img class="icon" src="{{.ImagePath}}alertdaylight.png" alt="D"/>{{end}}
+    </span>&nbsp;&nbsp;
+    <span class="Points">{{.Points}}</span>
     <span class="bonusimage">
         <img src="{{.ImagePath}}{{.BonusID}}.png" alt="{{.BonusID}}"/>
     </span>
+    <span class="notes">some old waffle</span>
 </div>

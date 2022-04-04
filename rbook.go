@@ -45,33 +45,34 @@ var CFG struct {
 	ProjectFolder string        `yaml:"projectfolder"`
 	OutputFolder  string        `yaml:"outputfolder"`
 	Database      string        `yaml:"database"`
-	Imagefolder   string        `yaml:"imagefolder"`
+	ImageFolder   string        `yaml:"imagefolder"`
 	Sections      []string      `yaml:"sections"`
 	Streams       []BonusStream `yaml:"streams"`
 	Landscape     bool          `yaml:"landscape"`
 }
 
 type Bonus struct {
-	BonusID    string
-	Title      string
-	Points     int
-	Flags      string
-	Notes      string
-	Waffle     string
-	Coords     string
-	Image      string
-	Cat1       int
-	Cat2       int
-	Cat3       int
-	Cat4       int
-	Cat5       int
-	Cat6       int
-	Cat7       int
-	Cat8       int
-	Cat9       int
-	ClearFloat bool
-	StreamID   string
-	ImagePath  string
+	BonusID                                        string
+	Title                                          string
+	Points                                         int
+	Flags                                          string
+	Notes                                          string
+	Waffle                                         string
+	Coords                                         string
+	Image                                          string
+	Cat1                                           int
+	Cat2                                           int
+	Cat3                                           int
+	Cat4                                           int
+	Cat5                                           int
+	Cat6                                           int
+	Cat7                                           int
+	Cat8                                           int
+	Cat9                                           int
+	NewLine                                        bool
+	StreamID                                       string
+	ImageFolder                                    string
+	AlertT, AlertR, AlertF, AlertB, AlertD, AlertA bool
 }
 
 func newBonus() *Bonus {
@@ -82,8 +83,8 @@ func newBonus() *Bonus {
 	b.Waffle = ""
 	b.Coords = ""
 	b.Image = ""
-	b.ClearFloat = false
-	b.ImagePath = CFG.Imagefolder
+	b.NewLine = false
+	b.ImageFolder = CFG.ImageFolder
 
 	return &b
 
@@ -133,7 +134,7 @@ func loadConfig() {
 		panic(err)
 	}
 
-	fmt.Printf("CFG now reads %v\n\n", CFG.Imagefolder)
+	fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
 }
 func main() {
 
@@ -208,8 +209,10 @@ func emitBonuses(s int, sf string) {
 
 			B.StreamID = CFG.Streams[s].StreamID
 
-			B.ClearFloat = NRex%CFG.Streams[s].MaxPerLine == 0
-			B.ImagePath = CFG.Imagefolder
+			B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+			B.ImageFolder = CFG.ImageFolder
+
+			setFlags(B)
 
 			xfile := filepath.Join(CFG.ProjectFolder, sf+".html")
 			if !fileExists(xfile) {
@@ -247,4 +250,24 @@ func emitTopTail(F *os.File, xfile string) {
 		fmt.Printf("x %v\n", err)
 	}
 
+}
+
+func setFlags(b *Bonus) {
+
+	for _, c := range b.Flags {
+		switch c {
+		case 'F':
+			b.AlertF = true
+		case 'T':
+			b.AlertT = true
+		case 'B':
+			b.AlertB = true
+		case 'A':
+			b.AlertA = true
+		case 'R':
+			b.AlertR = true
+		case 'D':
+			b.AlertD = true
+		}
+	}
 }
