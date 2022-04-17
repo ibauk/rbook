@@ -10,12 +10,13 @@ description: A4 portrait, 2 column photos
 
 
 # Standard filepath specification, relative to CWD
-projectfolder: projects\sample\
-outputfolder: 
-database: \sm-installs\testmodel\sm\scoremaster.db
+projectfolder: \projects\rbook\projects\it22
+outputfolder: \sm-installs\it22test
+outputfile: IT22Rallybook.html
+database: \sm-installs\it22test\sm\scoremaster.db
 
 # URL format, relative to output folder
-imagefolder: projects/sample/images/
+imagefolder: sm/images/
 
 # default is portrait
 landscape: false
@@ -25,14 +26,14 @@ landscape: false
 # configuration variables. Entries starting with 'stream.' refer to
 # streams which process either bonuses or combos. Streams are defined
 # below.
-sections: [ frontpage, header, walkhdr, stream.bonuses, footer]
+sections: [  header, walkhdr, stream.bonuses, footer]
 
 # StreamID is the name of the template file.
 streams:
   - { 
       streamid:     bonuses, 
       type:         bonus,
-      wherestring:  BonusID NOT LIKE '%-' AND BonusID <='14',
+      wherestring:  BonusID NOT LIKE '%-',
       bonusorder:   BonusID,
       maxperline:   2
     }

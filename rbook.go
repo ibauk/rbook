@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 	"flag"
 	"fmt"
 	"html/template"
@@ -21,7 +20,7 @@ I print rally books using data supplied by Rallymasters in a standard format
 
 var yml = flag.String("cfg", "rbook.yml", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
-var outputfile = flag.String("to", "output.html", "Output filename")
+var outputfile = flag.String("to", "", "Output filename. Default to YAML config")
 
 var DBH *sql.DB
 var OUTF *os.File
@@ -44,6 +43,7 @@ var CFG struct {
 	Description   string        `yaml:"description"`
 	ProjectFolder string        `yaml:"projectfolder"`
 	OutputFolder  string        `yaml:"outputfolder"`
+	OutputFile    string        `yaml:"outputfile"`
 	Database      string        `yaml:"database"`
 	ImageFolder   string        `yaml:"imagefolder"`
 	Sections      []string      `yaml:"sections"`
@@ -93,7 +93,8 @@ func newBonus() *Bonus {
 func fileExists(x string) bool {
 
 	_, err := os.Stat(x)
-	return !errors.Is(err, os.ErrNotExist)
+	//return !errors.Is(err, os.ErrNotExist)
+	return err == nil
 
 }
 
@@ -134,6 +135,13 @@ func loadConfig() {
 		panic(err)
 	}
 
+	if *outputfile == "" {
+		*outputfile = CFG.OutputFile
+		if *outputfile == "" {
+			fmt.Println("Must specify an outputfile name")
+			os.Exit(1)
+		}
+	}
 	fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
 }
 func main() {
@@ -183,7 +191,7 @@ func emitBonuses(s int, sf string) {
 
 	for s := 0; s < len(CFG.Streams); s++ {
 		sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
-		sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9"
+		sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Image,IfNull(Waffle,''),IfNull(Coords,'')"
 		sql += " FROM bonuses "
 		if CFG.Streams[s].WhereString != "" {
 			sql += " WHERE " + CFG.Streams[s].WhereString
@@ -202,7 +210,7 @@ func emitBonuses(s int, sf string) {
 			B := newBonus()
 
 			err := rows.Scan(&B.BonusID, &B.Title, &B.Points, &B.Flags, &B.Notes,
-				&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9)
+				&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Image, &B.Waffle, &B.Coords)
 			if err != nil {
 				fmt.Printf("%v\n", err)
 			}
@@ -241,6 +249,9 @@ func emitCombos(s int, sf string) {
 
 func emitTopTail(F *os.File, xfile string) {
 
+	if !fileExists(xfile) {
+		return
+	}
 	html, err := template.ParseFiles(xfile)
 	if err != nil {
 		fmt.Printf("Error (%v) in static file %v\n", err, xfile)
