@@ -73,6 +73,34 @@ type Bonus struct {
 	StreamID                                       string
 	ImageFolder                                    string
 	AlertT, AlertR, AlertF, AlertB, AlertD, AlertA bool
+	Question                                       string
+	Answer                                         string
+}
+
+type ComboBonus struct {
+	BonusID   string
+	BriefDesc string
+}
+type Combo struct {
+	ComboID      string
+	BriefDesc    string
+	ScoreMethod  int
+	MinimumTicks int
+	ScorePoints  string
+	BonusList    string
+	Bonuses      []ComboBonus
+	Cat1         int
+	Cat2         int
+	Cat3         int
+	Cat4         int
+	Cat5         int
+	Cat6         int
+	Cat7         int
+	Cat8         int
+	Cat9         int
+	Compulsory   bool
+	NewLine      bool
+	StreamID     string
 }
 
 func newBonus() *Bonus {
@@ -90,6 +118,17 @@ func newBonus() *Bonus {
 
 }
 
+func newCombo() *Combo {
+
+	var b Combo
+
+	b.Compulsory = false
+	b.MinimumTicks = 0
+	b.NewLine = false
+
+	return &b
+
+}
 func fileExists(x string) bool {
 
 	_, err := os.Stat(x)
@@ -175,11 +214,12 @@ func main() {
 		for sx, v := range CFG.Streams {
 			if v.StreamID == sf[1] {
 				if v.Type == type_combo {
+					//fmt.Printf("Calling combos %v\n", v.StreamID)
 					emitCombos(sx, sf[1])
 				} else {
+					//fmt.Printf("Calling bonuses %v\n", v.StreamID)
 					emitBonuses(sx, sf[1])
 				}
-				break
 			}
 		}
 
@@ -189,61 +229,111 @@ func main() {
 
 func emitBonuses(s int, sf string) {
 
-	for s := 0; s < len(CFG.Streams); s++ {
-		sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
-		sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Image,IfNull(Waffle,''),IfNull(Coords,'')"
-		sql += " FROM bonuses "
-		if CFG.Streams[s].WhereString != "" {
-			sql += " WHERE " + CFG.Streams[s].WhereString
-		}
-		if CFG.Streams[s].BonusOrder != "" {
-			sql += " ORDER BY " + CFG.Streams[s].BonusOrder
-		}
-		//fmt.Printf("%v\n", sql)
-		rows, err := DBH.Query(sql)
+	sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
+	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Image,IfNull(Waffle,''),IfNull(Coords,''),"
+	sql += "Question,Answer"
+	sql += " FROM bonuses "
+	if CFG.Streams[s].WhereString != "" {
+		sql += " WHERE " + CFG.Streams[s].WhereString
+	}
+	if CFG.Streams[s].BonusOrder != "" {
+		sql += " ORDER BY " + CFG.Streams[s].BonusOrder
+	}
+	//fmt.Printf("%v\n", sql)
+	rows, err := DBH.Query(sql)
+	if err != nil {
+		fmt.Printf("ERROR! %v\nproduced %v\n", sql, err)
+		return
+	}
+	NRex := 0
+	for rows.Next() {
+		B := newBonus()
+
+		err := rows.Scan(&B.BonusID, &B.Title, &B.Points, &B.Flags, &B.Notes,
+			&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Image, &B.Waffle, &B.Coords,
+			&B.Question, &B.Answer)
 		if err != nil {
-			fmt.Printf("ERROR! %v\nproduced %v\n", sql, err)
+			fmt.Printf("%v\n", err)
+		}
+
+		B.StreamID = CFG.Streams[s].StreamID
+
+		B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+		B.ImageFolder = CFG.ImageFolder
+
+		setFlags(B)
+
+		xfile := filepath.Join(CFG.ProjectFolder, sf+".html")
+		if !fileExists(xfile) {
+			fmt.Printf("Stream %v has no template %v\n", CFG.Streams[s].StreamID, xfile)
+			rows.Close()
 			return
 		}
-		NRex := 0
-		for rows.Next() {
-			B := newBonus()
-
-			err := rows.Scan(&B.BonusID, &B.Title, &B.Points, &B.Flags, &B.Notes,
-				&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Image, &B.Waffle, &B.Coords)
-			if err != nil {
-				fmt.Printf("%v\n", err)
-			}
-
-			B.StreamID = CFG.Streams[s].StreamID
-
-			B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
-			B.ImageFolder = CFG.ImageFolder
-
-			setFlags(B)
-
-			xfile := filepath.Join(CFG.ProjectFolder, sf+".html")
-			if !fileExists(xfile) {
-				fmt.Printf("Stream %v has no template %v\n", CFG.Streams[s].StreamID, xfile)
-				rows.Close()
-				return
-			}
-			t, err := template.ParseFiles(xfile)
-			if err != nil {
-				fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
-			}
-			err = t.Execute(OUTF, B)
-			if err != nil {
-				fmt.Printf("x %v\n", err)
-			}
-			NRex++
+		t, err := template.ParseFiles(xfile)
+		if err != nil {
+			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 		}
-		fmt.Printf("%v bonus records processed\n", NRex)
-		rows.Close()
+		err = t.Execute(OUTF, B)
+		if err != nil {
+			fmt.Printf("x %v\n", err)
+		}
+		NRex++
 	}
+	fmt.Printf("%v bonus records processed\n", NRex)
+	rows.Close()
+
 }
 
 func emitCombos(s int, sf string) {
+
+	sql := "SELECT ComboID,BriefDesc,ScoreMethod,MinimumTicks,ScorePoints,IfNull(Bonuses,''),"
+	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Compulsory"
+	sql += " FROM combinations "
+	if CFG.Streams[s].WhereString != "" {
+		sql += " WHERE " + CFG.Streams[s].WhereString
+	}
+	if CFG.Streams[s].BonusOrder != "" {
+		sql += " ORDER BY " + CFG.Streams[s].BonusOrder
+	}
+	//fmt.Printf("%v\n", sql)
+	rows, err := DBH.Query(sql)
+	if err != nil {
+		fmt.Printf("ERROR! %v\nproduced %v\n", sql, err)
+		return
+	}
+	NRex := 0
+	for rows.Next() {
+
+		B := newCombo()
+
+		err := rows.Scan(&B.ComboID, &B.BriefDesc, &B.ScorePoints, &B.MinimumTicks, &B.ScorePoints, &B.BonusList,
+			&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Compulsory)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+
+		B.StreamID = CFG.Streams[s].StreamID
+
+		B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+
+		xfile := filepath.Join(CFG.ProjectFolder, sf+".html")
+		if !fileExists(xfile) {
+			fmt.Printf("Stream %v has no template %v\n", CFG.Streams[s].StreamID, xfile)
+			rows.Close()
+			return
+		}
+		t, err := template.ParseFiles(xfile)
+		if err != nil {
+			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
+		}
+		err = t.Execute(OUTF, B)
+		if err != nil {
+			fmt.Printf("x %v\n", err)
+		}
+		NRex++
+	}
+	fmt.Printf("%v Combo records processed\n", NRex)
+	rows.Close()
 
 }
 

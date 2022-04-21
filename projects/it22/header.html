@@ -15,6 +15,7 @@
                 body {
                         font-family: Verdana, Geneva, Tahoma, sans-serif;
                         width: 297mm;
+                        font-size: 14pt;
                 }
 
                 h1 {
@@ -22,10 +23,19 @@
                         margin-bottom: 1.3em;
                         margin-top: 0;
                         font-size: 72pt;
+                        color: red;
+                        font-weight: bold;
                 }
 
                 h2 {
                         text-align: center;
+                        padding: 2em 0 1em 0;
+                        font-size: larger;
+
+                }
+
+                h3 {
+                        text-align: left;
                         padding: 2em 0 1em 0;
                         font-size: larger;
 
@@ -123,7 +133,7 @@
                 }
 
                 strong {
-                        font-size: larger;
+                        text-transform: uppercase;
                 }
 
                 .label {
@@ -169,12 +179,19 @@
                                 page-break-inside: avoid;
                                 display: inline-block;
                             }
-                .BonusID    { display: inline-block; width: 30pt;  }
-                .Title      { display: inline-block; width: 160pt; font-style: italic; }
+                
+                .BonusID    { display: inline-block; width: 30pt; font-weight: bold; color:fuchsia; }
+                
+                .Title      { display: inline-block; width: 200pt; font-style: italic; }
+                .short      { width: 140pt; }
                 .Points     { display: inline-block; width: 40pt; font-weight: bold; border: solid; padding: 2px; text-align: center; }
+
+                
+                .pagebreak      { page-break-before: always; }
 
                 .BonusID,
                 .Flags,
+                .Title,
                 .Points     { height: 20pt; }
                 .tenpct     { background: lightgray; }
                 .example    { border: dotted; padding: 15px; margin-left: auto; margin-right: auto; }
@@ -183,6 +200,9 @@
 
                 .coords         { display: inline-block; width: 100%; }
                 .waffle         { display: inline-block; width: 100%; }
+
+                tr.question     { display:inline-block;  padding-bottom: .5em; }
+                td.nowrap       { display: table-cell; width: 140pt; }
 
                 .bonusimage { display: block; }
                 .bonusimage img    {
@@ -195,35 +215,39 @@
                         padding-left: 30pt;
                 }
                 #frontpage { 
-                        background: blue; color: gold; page-break-after: always; 
+                        border: double; page-break-after: always; 
                         width: 90%; height: 90%; margin-left: auto; margin-right: auto;
                         margin-top: 2cm;
                 }
                 #frontpage img {
-                        height: 180px;
-                        margin: 2em 2em 0 2em;
+                        display: block;
+                        width: 600pt;
+                        margin-left: auto;
+                        margin-right: auto;
+                        padding-bottom: 10pt;
                 }
                 #walkhdr { 
                         margin: 2em;
                         width: 90%;
                         page-break-after: always; 
                 }
-
+/**
                 #walkhdr p {
                         font-size: 16pt;
                 }
-
-                /**
-        .row    { margin-left: auto; margin-right: auto; }
-
-        .column { float: left; }
-
-        .left, .right { width: 10%; }
-
-        .middle {   width: 80%; }
-        
 **/
+                .intro  { 
+                                page-break-after: always; 
+                                width: 240mm;
+                                text-align: justify;
+                                font-size: 14pt;
+                                margin-left: auto;
+                                margin-right: auto;
+                        }
+
+
         </style>
+
 </head>
 
 <body>
