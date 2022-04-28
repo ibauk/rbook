@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -257,6 +258,10 @@ func emitBonuses(s int, sf string) {
 		}
 
 		B.StreamID = CFG.Streams[s].StreamID
+
+		u := url.QueryEscape(B.Image)
+		fmt.Printf("Parsed %v; got %v\n", B.Image, u)
+		B.Image = u
 
 		B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
 		B.ImageFolder = CFG.ImageFolder
