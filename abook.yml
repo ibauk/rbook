@@ -1,0 +1,41 @@
+# qbook.yml
+#
+# This is the RBook project for use with IT22 question list
+#
+
+
+title: 2022 Invictus Tour Answers
+
+description: A4 landscape
+
+
+# Standard filepath specification, relative to CWD
+projectfolder: \projects\rbook\projects\it22
+outputfolder: \sm-installs\it22test
+outputfile: IT22Answers.html
+database: \sm-installs\it22test\sm\scoremaster.db
+
+# URL format, relative to output folder
+imagefolder: sm/images/
+
+# default is portrait
+landscape: false
+
+
+# Each entry in sections is the name of a static template with limited
+# configuration variables. Entries starting with 'stream.' refer to
+# streams which process either bonuses or combos. Streams are defined
+# below.
+sections: [  header, aheader, stream.answers, qfooter, footer]
+
+# StreamID is the name of the template file.
+streams:
+  - { 
+      streamid:     answers, 
+      type:         bonus,
+      wherestring:  Question<>'',
+      bonusorder:   BonusID,
+      maxperline:   1
+    }
+
+
