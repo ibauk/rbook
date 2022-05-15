@@ -38,6 +38,7 @@ type BonusStream struct {
 	BonusOrder   string `yaml:"bonusorder"`
 	MaxPerLine   int    `yaml:"maxperline"`
 	LinesPerPage int    `yaml:"linesperpage"`
+	BrPerLine    int    `yaml:"brperline"`
 }
 
 var CFG struct {
@@ -300,6 +301,13 @@ func emitBonuses(s int, sf string) {
 			fmt.Printf("x %v\n", err)
 		}
 	}
+	if NLines < CFG.Streams[s].LinesPerPage {
+		NLines++
+		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
+		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+
+	}
 	OUTF.WriteString("</div>")
 	fmt.Printf("%v bonus records processed\n", NRex)
 	rows.Close()
@@ -324,6 +332,7 @@ func emitCombos(s int, sf string) {
 		return
 	}
 	NRex := 0
+	NLines := -1
 	OUTF.WriteString("<div class='page'>")
 	for rows.Next() {
 
@@ -338,6 +347,17 @@ func emitCombos(s int, sf string) {
 		B.StreamID = CFG.Streams[s].StreamID
 
 		B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+		if B.NewLine {
+			NLines++
+			if NLines >= CFG.Streams[s].LinesPerPage {
+				xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
+					B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
+				OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+				NLines = 0
+			}
+		}
+
+		NRex++
 
 		xfile := filepath.Join(CFG.ProjectFolder, sf+".html")
 		if !fileExists(xfile) {
@@ -353,8 +373,14 @@ func emitCombos(s int, sf string) {
 		if err != nil {
 			fmt.Printf("x %v\n", err)
 		}
-		NRex++
 	}
+	if NLines < CFG.Streams[s].LinesPerPage {
+		NLines++
+		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
+		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+	}
+
 	OUTF.WriteString("</div>")
 	fmt.Printf("%v Combo records processed\n", NRex)
 	rows.Close()

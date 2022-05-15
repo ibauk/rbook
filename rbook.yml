@@ -36,7 +36,8 @@ streams:
       wherestring:  ,
       bonusorder:   BonusID,
       maxperline:   2,
-      linesperpage: 2
+      linesperpage: 2,
+      brperline: 34
     }
   - { 
       streamid:     combos,
@@ -44,7 +45,8 @@ streams:
       wherestring:  , 
       bonusorder: ComboID ,
       maxperline: 1,
-      linesperpage: 2
+      linesperpage: 10,
+      brperline: 5
     }
 
 
