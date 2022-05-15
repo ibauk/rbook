@@ -32,11 +32,12 @@ const type_static = "static"
 const stream_prefix = "stream"
 
 type BonusStream struct {
-	StreamID    string `yaml:"streamid"`
-	Type        string `yaml:"type"` // bonus, combo, static
-	WhereString string `yaml:"wherestring"`
-	BonusOrder  string `yaml:"bonusorder"`
-	MaxPerLine  int    `yaml:"maxperline"`
+	StreamID     string `yaml:"streamid"`
+	Type         string `yaml:"type"` // bonus, combo, static
+	WhereString  string `yaml:"wherestring"`
+	BonusOrder   string `yaml:"bonusorder"`
+	MaxPerLine   int    `yaml:"maxperline"`
+	LinesPerPage int    `yaml:"linesperpage"`
 }
 
 var CFG struct {
@@ -76,6 +77,7 @@ type Bonus struct {
 	AlertT, AlertR, AlertF, AlertB, AlertD, AlertA bool
 	Question                                       string
 	Answer                                         string
+	HasWaffle                                      bool
 }
 
 type ComboBonus struct {
@@ -247,6 +249,8 @@ func emitBonuses(s int, sf string) {
 		return
 	}
 	NRex := 0
+	NLines := -1
+	OUTF.WriteString("<div class='page'>\n")
 	for rows.Next() {
 		B := newBonus()
 
@@ -258,12 +262,25 @@ func emitBonuses(s int, sf string) {
 		}
 
 		B.StreamID = CFG.Streams[s].StreamID
+		B.HasWaffle = B.Waffle != ""
 
 		u := url.QueryEscape(B.Image)
-		fmt.Printf("Parsed %v; got %v\n", B.Image, u)
+		//fmt.Printf("Parsed %v; got %v\n", B.Image, u)
 		B.Image = u
 
 		B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+		if B.NewLine {
+			NLines++
+			if NLines >= CFG.Streams[s].LinesPerPage {
+				xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
+					B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
+				OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+				NLines = 0
+			}
+		}
+
+		NRex++
+
 		B.ImageFolder = CFG.ImageFolder
 
 		setFlags(B)
@@ -282,8 +299,8 @@ func emitBonuses(s int, sf string) {
 		if err != nil {
 			fmt.Printf("x %v\n", err)
 		}
-		NRex++
 	}
+	OUTF.WriteString("</div>")
 	fmt.Printf("%v bonus records processed\n", NRex)
 	rows.Close()
 
@@ -307,6 +324,7 @@ func emitCombos(s int, sf string) {
 		return
 	}
 	NRex := 0
+	OUTF.WriteString("<div class='page'>")
 	for rows.Next() {
 
 		B := newCombo()
@@ -337,6 +355,7 @@ func emitCombos(s int, sf string) {
 		}
 		NRex++
 	}
+	OUTF.WriteString("</div>")
 	fmt.Printf("%v Combo records processed\n", NRex)
 	rows.Close()
 

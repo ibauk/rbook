@@ -35,14 +35,16 @@ streams:
       type:         bonus,
       wherestring:  ,
       bonusorder:   BonusID,
-      maxperline:   2
+      maxperline:   2,
+      linesperpage: 2
     }
   - { 
       streamid:     combos,
       type:       combo,
       wherestring:  , 
       bonusorder: ComboID ,
-      maxperline: 1
+      maxperline: 1,
+      linesperpage: 2
     }
 
 
