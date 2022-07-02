@@ -235,7 +235,7 @@ func emitBonuses(s int, sf string) {
 
 	sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
 	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Image,IfNull(Waffle,''),IfNull(Coords,''),"
-	sql += "Question,Answer"
+	sql += "IfNull(Question,''),IfNull(Answer,'')"
 	sql += " FROM bonuses "
 	if CFG.Streams[s].WhereString != "" {
 		sql += " WHERE " + CFG.Streams[s].WhereString
