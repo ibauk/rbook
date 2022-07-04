@@ -79,6 +79,7 @@ type Bonus struct {
 	Question                                       string
 	Answer                                         string
 	HasWaffle                                      bool
+	HasNotes                                       bool
 }
 
 type ComboBonus struct {
@@ -264,6 +265,7 @@ func emitBonuses(s int, sf string) {
 
 		B.StreamID = CFG.Streams[s].StreamID
 		B.HasWaffle = B.Waffle != ""
+		B.HasNotes = B.Notes != ""
 
 		u := url.QueryEscape(B.Image)
 		//fmt.Printf("Parsed %v; got %v\n", B.Image, u)

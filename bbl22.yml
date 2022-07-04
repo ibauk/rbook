@@ -32,7 +32,7 @@ streams:
       streamid:     bonuses, 
       type:         bonus,
       wherestring:  ,
-      bonusorder:   BriefDesc,
+      bonusorder:   'substr(BriefDesc,-3,1)',
       maxperline:   2,
       linesperpage: 3,
       brperline: 23
@@ -43,8 +43,8 @@ streams:
       wherestring:  , 
       bonusorder: BonusID ,
       maxperline: 1,
-      linesperpage: 40,
-      brperline: 0
+      linesperpage: 44,
+      brperline: 2
     }
 
 

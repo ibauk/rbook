@@ -13,6 +13,7 @@
     <span class="bonusimage">
         <img src="{{.ImageFolder}}/bonuses/{{.Image}}" alt="{{.BonusID}}"/>
     </span>
+    <span class="notes {{if .HasNotes}} {{else}} hide{{end}}">{{.Notes}}</span>
     <span class="waffle {{if .HasWaffle}} {{else}} hide{{end}}">{{.Waffle}}</span>
 </div>
 
