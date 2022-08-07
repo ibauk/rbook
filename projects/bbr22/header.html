@@ -65,77 +65,6 @@
                         margin-bottom: 1em;
                 }
 
-                /* Receipt log blocks */
-                .rlblock1 {
-                        width: 60em;
-                        border: none;
-                        margin-left: auto;
-                        margin-right: auto;
-                        margin-bottom: 1em;
-                }
-
-                .rlblock1 td {
-                        width: 28em;
-                        border: solid;
-                        padding: .5em;
-                }
-
-                .rlblock2 {
-                        width: 60em;
-                        border: none;
-                        margin-left: auto;
-                        margin-right: auto;
-                        margin-bottom: .75em;
-                        border-spacing: .1em 0;
-                }
-
-                .rlblock2 td {
-                        width: 28em;
-                        border: solid;
-                        padding: .5em;
-                }
-
-                .rlblock3 {
-                        width: 60em;
-                        border: none;
-                        margin-left: auto;
-                        margin-right: auto;
-                        border-spacing: .1em 0;
-                }
-
-                .rlblock3 td {
-                        border: solid;
-                        padding: .5em;
-                }
-
-                .rlblock3 th,
-                .rlblock2 th {
-                        background-color: lightgray;
-                        border: solid;
-                }
-
-                td.top,
-                th.top {
-                        border-bottom: none;
-                }
-
-                td.bottom {
-                        border-top: none;
-                        margin-bottom: .5em;
-                }
-
-                .rlindex {
-                        width: 6em;
-                        text-align: center;
-                }
-
-                .rlplace {
-                        width: 15em;
-                        text-align: center;
-                }
-
-
-
                 .label {
                         text-align: center;
                         width: 10em;
@@ -169,66 +98,24 @@
                 }
 
                 .legend     { list-style-type: none; padding: 1em;  }
-                .bonus      { 
-                                margin-bottom: 10pt; 
-                                margin-top: 30pt; 
-                                margin-left: 0pt;
-                                margin-right: 20pt;
-                                
-                                width: 380pt; 
-                                height: 520pt;
-                                page-break-inside: avoid;
-                                display: inline-block;
-                            }
                 
-                .BonusID    { 
-                                display: inline-block; 
-                                width: 80pt; 
-                                font-weight: normal; 
-                                border: solid; 
-                                padding: 4px; 
-                                text-align: center;
-                                vertical-align: middle;
-                                margin-bottom: 3px;
-                }
-                .BonusID::before {
-                                content: "Code ";
-                }
                 
-                .Title      { 
-                        display: inline-block; 
-                        width: 120pt; 
-                        
-                        font-style: italic; 
-                        font-size: .9em; 
-                        vertical-align: text-bottom;
-                }
                 .short      { width: 140pt; }
-                .Points     { 
-                                display: inline-block; 
-                                width: 100pt; 
-                                font-weight: normal; 
-                                border: solid; 
-                                padding: 4px; 
-                                text-align: center; 
-                                vertical-align: middle; 
-                                margin-bottom: 3px;
-                }
-                .Points::before {  content: "Points ";}
-
+ 
                 
                 .pagebreak      { page-break-after: always; background-color: blue; }
 
-                .BonusID,
-                .Points     { height: 30pt; }
                 .tenpct     { background: lightgray; }
                 .example    { border: dotted; padding: 15px; margin-left: auto; margin-right: auto; }
-                .icon       { width: 32px; vertical-align: sub; }
+                .icon       { width: 64px; vertical-align: middle; padding: 3px; }
                 .icon.big   { width: 64px; height: 64px; vertical-align: sub; }
                 .flags      {
                         display: inline-block;
-                        width: 72px;
+                        width: 100%;
+                        height: 80px;
+                        border-bottom: solid 8px;
                 }
+
                 .email      { color: blue; text-decoration: none; font-weight: bold; }
 
                 .label      { font-weight: normal; }
@@ -236,25 +123,48 @@
                 .coords         { 
                         display: inline-block; 
                         width: 100%; 
+                        text-align: center;
+                        font-size: 1.3em;
                         border-top: none;
-                        border-right: solid;
-                        border-left: solid;
-                        border-bottom: solid;
-                        height: 1.5em;
-                        padding: 2px;
+                        border-bottom: solid 8px;
+                        height: 2.5em;
+                        padding: .3em;
                         margin-top: 0;
                 }
                 .waffle         { 
                         display: inline-block; 
-                        width: 100%; 
-                        font-size: .9em;
+                        width: 96%; 
+                        font-weight: bold;
+                        font-size: 1.1em;
                         border-top: none;
-                        border-right: solid;
-                        border-left: solid;
-                        border-bottom: solid;
+                        border-right: solid 8px;
+                        border-left: solid 8px;
+                        border-bottom: solid 8px;
                         height: 2.5em;
-                        padding: 2px;
+                        padding: .26em;
                         margin-top: 0;
+                        text-align: center;
+                        vertical-align: middle;
+                }
+                .Notes          {
+                        display: inline-block;
+                        width: 100%;
+                        height: 2.5em;
+                        font-size: 1.2em;
+                        padding: .5em;
+                        text-align: center;
+                        vertical-align: middle;
+                }
+                .Title           {
+                        border-top: solid 8px;
+                        border-bottom: solid 8px;
+                        display: inline-block;
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        text-align: center;
+                        padding-top: .5em;
+                        padding-bottom: .5em;
+                        width: 100%;
                 }
                 .hide {
                         border: none;
@@ -265,12 +175,56 @@
                 tr.question     { display:inline-block;  padding-bottom: .5em; }
                 td.nowrap       { display: table-cell; width: 140pt; }
 
-                .bonusimage { display: block; }
+
+                .bonus      { 
+                                margin-top: 30pt;
+                                width: 96%; 
+                                height: 22em;
+                                border: solid 8px;
+                                padding: 0 5px 0 5px;
+                                page-break-inside: avoid;
+                                display: block;
+                                clear: both;
+                            }
+
+                .BonusID        {
+                        display: inline-block;
+                        width: 4em;
+                        border-right: solid 8px;
+                        font-size: 36pt;
+                        text-align: center;
+                }
+                .Points         {
+                        display: inline-block;
+                        width: 4em;
+                        font-size: 36pt;
+                        text-align: center;
+                }
+                .bonusimage { 
+                        display: block; 
+                        float: left;
+                        padding-top: 5px;
+                        border-right: solid 8px;
+                        width: 450pt;
+                }
                 .bonusimage img    {
                         
-                        width: 380pt; height: 400pt;
+                        display: inline-block;
+                        margin-left: auto;
+                        margin-right: auto;
+                        padding: 10px;
+                        max-height: 21em;
+                        width: 440pt;
                 }
                 .flags      { display: inline-block; padding: 0; margin: 0; }
+
+
+                .bonusright {
+                        display: block;
+                        float: right;
+                        width: 309pt;
+                }
+
 
                 .pages       {
                         padding-left: 30pt;
@@ -291,11 +245,25 @@
                         margin: 2em;
                         width: 90%;
                 }
-/**
-                #walkhdr p {
-                        font-size: 16pt;
+
+                .walkhdr p {
+                        font-size: 24pt;
                 }
-**/
+
+                .combohead      {
+                        margin: 2em;
+                        width: 90%;
+                        font-size: 24pt;
+                }
+
+                .combohead dt {
+                                font-weight: bold;
+                }
+                .combohead dd {
+                                display: inline-block;
+                                margin-left: 5em;
+                                margin-bottom: 2em;
+                }
 
                 .intro  { 
                                 

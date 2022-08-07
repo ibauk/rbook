@@ -43,7 +43,7 @@ streams:
       wherestring:  , 
       bonusorder: ComboID ,
       maxperline: 1,
-      linesperpage: 10,
+      linesperpage: 5,
       brperline: 5
     }
 

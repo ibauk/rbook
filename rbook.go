@@ -80,6 +80,7 @@ type Bonus struct {
 	Answer                                         string
 	HasWaffle                                      bool
 	HasNotes                                       bool
+	AskPoints                                      bool
 }
 
 type ComboBonus struct {
@@ -236,7 +237,7 @@ func emitBonuses(s int, sf string) {
 
 	sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
 	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Image,IfNull(Waffle,''),IfNull(Coords,''),"
-	sql += "IfNull(Question,''),IfNull(Answer,'')"
+	sql += "IfNull(Question,''),IfNull(Answer,''),AskPoints"
 	sql += " FROM bonuses "
 	if CFG.Streams[s].WhereString != "" {
 		sql += " WHERE " + CFG.Streams[s].WhereString
@@ -255,10 +256,11 @@ func emitBonuses(s int, sf string) {
 	OUTF.WriteString("<div class='page'>\n")
 	for rows.Next() {
 		B := newBonus()
+		askPoints := 0
 
 		err := rows.Scan(&B.BonusID, &B.Title, &B.Points, &B.Flags, &B.Notes,
 			&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Image, &B.Waffle, &B.Coords,
-			&B.Question, &B.Answer)
+			&B.Question, &B.Answer, &askPoints)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 		}
@@ -266,6 +268,7 @@ func emitBonuses(s int, sf string) {
 		B.StreamID = CFG.Streams[s].StreamID
 		B.HasWaffle = B.Waffle != ""
 		B.HasNotes = B.Notes != ""
+		B.AskPoints = askPoints != 0
 
 		u := url.QueryEscape(B.Image)
 		//fmt.Printf("Parsed %v; got %v\n", B.Image, u)
@@ -340,7 +343,7 @@ func emitCombos(s int, sf string) {
 
 		B := newCombo()
 
-		err := rows.Scan(&B.ComboID, &B.BriefDesc, &B.ScorePoints, &B.MinimumTicks, &B.ScorePoints, &B.BonusList,
+		err := rows.Scan(&B.ComboID, &B.BriefDesc, &B.ScoreMethod, &B.MinimumTicks, &B.ScorePoints, &B.BonusList,
 			&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Compulsory)
 		if err != nil {
 			fmt.Printf("%v\n", err)
