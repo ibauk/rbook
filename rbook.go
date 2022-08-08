@@ -39,6 +39,7 @@ type BonusStream struct {
 	MaxPerLine   int    `yaml:"maxperline"`
 	LinesPerPage int    `yaml:"linesperpage"`
 	BrPerLine    int    `yaml:"brperline"`
+	TemplateID   string `yaml:"template"`
 }
 
 var CFG struct {
@@ -236,7 +237,7 @@ func main() {
 func emitBonuses(s int, sf string) {
 
 	sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
-	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Image,IfNull(Waffle,''),IfNull(Coords,''),"
+	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,IfNull(Image,''),IfNull(Waffle,''),IfNull(Coords,''),"
 	sql += "IfNull(Question,''),IfNull(Answer,''),AskPoints"
 	sql += " FROM bonuses "
 	if CFG.Streams[s].WhereString != "" {
@@ -291,7 +292,11 @@ func emitBonuses(s int, sf string) {
 
 		setFlags(B)
 
-		xfile := filepath.Join(CFG.ProjectFolder, sf+".html")
+		streamTemplate := sf
+		if CFG.Streams[s].TemplateID != "" {
+			streamTemplate = CFG.Streams[s].TemplateID
+		}
+		xfile := filepath.Join(CFG.ProjectFolder, streamTemplate+".html")
 		if !fileExists(xfile) {
 			fmt.Printf("Stream %v has no template %v\n", CFG.Streams[s].StreamID, xfile)
 			rows.Close()

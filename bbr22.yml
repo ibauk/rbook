@@ -24,14 +24,34 @@ landscape: false
 # configuration variables. Entries starting with 'stream.' refer to
 # streams which process either bonuses or combos. Streams are defined
 # below.
-sections: [  header, frontpage, introletter,bonusclaiming, stream.bonuses, comboheader, stream.combos, footer]
+sections: [  header, frontpage, introletter,bonusclaiming, stream.bonuses, rbheader, stream.rbstart, newpage,stream.rbonuses,comboheader, stream.combos, footer]
 
 # StreamID is the name of the template file.
 streams:
   - { 
       streamid:     bonuses, 
       type:         bonus,
-      wherestring:  ,
+      wherestring:  GroupName is null,
+      bonusorder:   BonusID,
+      maxperline:   1,
+      linesperpage: 3,
+      brperline: 34
+    }
+  - { 
+      streamid:     rbstart, 
+      template:     bonuses,
+      type:         bonus,
+      wherestring:  GroupName='RBStart',
+      bonusorder:   BonusID,
+      maxperline:   1,
+      linesperpage: 1,
+      brperline: 0
+    }
+  - { 
+      streamid:     rbonuses, 
+      template:     bonuses,
+      type:         bonus,
+      wherestring:  GroupName='RBOne' OR GroupName='RBTwo',
       bonusorder:   BonusID,
       maxperline:   1,
       linesperpage: 3,
@@ -43,7 +63,7 @@ streams:
       wherestring:  , 
       bonusorder: ComboID ,
       maxperline: 1,
-      linesperpage: 5,
+      linesperpage: 6,
       brperline: 5
     }
 

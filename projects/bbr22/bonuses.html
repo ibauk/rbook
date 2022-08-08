@@ -5,7 +5,7 @@
     </span>
     <span class="bonusright">
         <span class="BonusID"><strong>{{.BonusID}}</strong></span> 
-        <span class="Points"><strong>{{.Points}}</strong></span>
+        <span class="Points"><strong>{{if .AskPoints}}Various{{else}}{{.Points}}{{end}}</strong></span>
         <span class="Title">{{.Title}}</span>
         <span class="coords"><span class="label"></span>{{.Coords}}</span>
         <span class="flags">&nbsp;
