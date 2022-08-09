@@ -40,6 +40,7 @@ type BonusStream struct {
 	LinesPerPage int    `yaml:"linesperpage"`
 	BrPerLine    int    `yaml:"brperline"`
 	TemplateID   string `yaml:"template"`
+	NoPageTop    bool   `yaml:"nopagetop"`
 }
 
 var CFG struct {
@@ -225,7 +226,7 @@ func main() {
 					emitCombos(sx, sf[1])
 				} else {
 					//fmt.Printf("Calling bonuses %v\n", v.StreamID)
-					emitBonuses(sx, sf[1])
+					emitBonuses(sx, sf[1], v.NoPageTop)
 				}
 			}
 		}
@@ -234,7 +235,7 @@ func main() {
 
 }
 
-func emitBonuses(s int, sf string) {
+func emitBonuses(s int, sf string, nopage bool) {
 
 	sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
 	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,IfNull(Image,''),IfNull(Waffle,''),IfNull(Coords,''),"
@@ -254,7 +255,11 @@ func emitBonuses(s int, sf string) {
 	}
 	NRex := 0
 	NLines := -1
-	OUTF.WriteString("<div class='page'>\n")
+	if nopage {
+		OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
+	} else {
+		OUTF.WriteString("\n<div class='page'>\n")
+	}
 	for rows.Next() {
 		B := newBonus()
 		askPoints := 0

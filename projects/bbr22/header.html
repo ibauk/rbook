@@ -177,7 +177,7 @@
 
 
                 .bonus      { 
-                                margin-top: 30pt;
+                                /*margin-top: 30pt;*/
                                 width: 96%; 
                                 height: 22em;
                                 border: solid 8px;
@@ -256,10 +256,10 @@
                         font-size: 24pt;
                 }
 
-                .combohead dt {
+                .combohead .dt {
                                 font-weight: bold;
                 }
-                .combohead dd {
+                .combohead .dd {
                                 display: inline-block;
                                 margin-left: 5em;
                                 margin-bottom: 2em;
@@ -293,6 +293,17 @@
 
    /*page numbers*/
    .page::after {
+        display: block;
+        text-align: right;
+        padding-right: 3em;
+        content: " Page - " counter(page);
+        font-size: 14pt;
+    }
+    .nopage {
+        display: block;
+        counter-increment: page;
+    }
+    .nopage::after {
         display: block;
         text-align: right;
         padding-right: 3em;
