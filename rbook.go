@@ -10,11 +10,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/flopp/go-coordsparser"
 	_ "github.com/mattn/go-sqlite3"
 	yaml "gopkg.in/yaml.v2"
 )
 
-const apptitle = "RBook v1.0"
+const apptitle = "RBook v1.1"
 const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
@@ -22,14 +23,28 @@ I print rally books using data supplied by Rallymasters in a standard format
 var yml = flag.String("cfg", "rbook.yml", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
 var outputfile = flag.String("to", "", "Output filename. Default to YAML config")
+var outputGPX = flag.String("gpx", "", "Output GPX. Default to YAML config")
 
 var DBH *sql.DB
 var OUTF *os.File
+var GPXF *os.File
 
-const type_bonus = "bonus"
+// const type_bonus = "bonus"
 const type_combo = "combo"
-const type_static = "static"
+
+const type_entrant = "entrant"
+
+// const type_static = "static"
 const stream_prefix = "stream"
+
+const gpxheader = `<?xml version="1.0" encoding="utf-8"?>
+<gpx creator="Bob Stammers (` + apptitle + `)" version="1.1"
+xsi:schemaLocation="http://www.topografix.com/GPX/1/1 
+http://www.topografix.com/GPX/1/1/gpx.xsd" 
+xmlns="http://www.topografix.com/GPX/1/1" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+`
 
 type BonusStream struct {
 	StreamID     string `yaml:"streamid"`
@@ -49,42 +64,45 @@ var CFG struct {
 	ProjectFolder string        `yaml:"projectfolder"`
 	OutputFolder  string        `yaml:"outputfolder"`
 	OutputFile    string        `yaml:"outputfile"`
+	OutputGPX     string        `yaml:"outputgpx"`
 	Database      string        `yaml:"database"`
 	ImageFolder   string        `yaml:"imagefolder"`
 	Sections      []string      `yaml:"sections"`
 	Streams       []BonusStream `yaml:"streams"`
 	Landscape     bool          `yaml:"landscape"`
+	SymbolGPX     string        `yaml:"symbolgpx"`
 }
 
 type Bonus struct {
-	BonusID                                        string
-	Title                                          string
-	Points                                         int
-	Flags                                          string
-	Notes                                          string
-	Waffle                                         string
-	Coords                                         string
-	Image                                          string
-	Cat1                                           int
-	Cat2                                           int
-	Cat3                                           int
-	Cat4                                           int
-	Cat5                                           int
-	Cat6                                           int
-	Cat7                                           int
-	Cat8                                           int
-	Cat9                                           int
-	NewLine                                        bool
-	StreamID                                       string
-	ImageFolder                                    string
-	AlertT, AlertR, AlertF, AlertB, AlertD, AlertA bool
-	Question                                       string
-	Answer                                         string
-	HasWaffle                                      bool
-	HasNotes                                       bool
-	AskPoints                                      bool
+	BonusID                                                string
+	Title                                                  string
+	Points                                                 int
+	Flags                                                  string
+	Notes                                                  string
+	Waffle                                                 string
+	Coords                                                 string
+	Image                                                  string
+	Cat1                                                   int
+	Cat2                                                   int
+	Cat3                                                   int
+	Cat4                                                   int
+	Cat5                                                   int
+	Cat6                                                   int
+	Cat7                                                   int
+	Cat8                                                   int
+	Cat9                                                   int
+	NewLine                                                bool
+	StreamID                                               string
+	ImageFolder                                            string
+	AlertT, AlertR, AlertF, AlertB, AlertD, AlertA, AlertN bool
+	Question                                               string
+	Answer                                                 string
+	HasWaffle                                              bool
+	HasNotes                                               bool
+	AskPoints                                              bool
+	Lat                                                    float64
+	Lon                                                    float64
 }
-
 type ComboBonus struct {
 	BonusID   string
 	BriefDesc string
@@ -109,6 +127,19 @@ type Combo struct {
 	Compulsory   bool
 	NewLine      bool
 	StreamID     string
+}
+
+type Entrant struct {
+	EntrantID   int
+	RiderName   string
+	PillionName string
+	Bike        string
+	BikeReg     string
+	OdoKms      bool
+	Cohort      int
+	NewLine     bool
+	StreamID    string
+	ImageFolder string
 }
 
 func newBonus() *Bonus {
@@ -137,6 +168,14 @@ func newCombo() *Combo {
 	return &b
 
 }
+
+func newEntrant() *Entrant {
+
+	var e Entrant
+
+	return &e
+}
+
 func fileExists(x string) bool {
 
 	_, err := os.Stat(x)
@@ -189,6 +228,9 @@ func loadConfig() {
 			os.Exit(1)
 		}
 	}
+	if *outputGPX == "" {
+		*outputGPX = CFG.OutputGPX
+	}
 	fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
 }
 func main() {
@@ -198,8 +240,17 @@ func main() {
 	fmt.Printf("%v\nCopyright (c) 2022 Bob Stammers\n", apptitle)
 	xfile = filepath.Join(CFG.OutputFolder, *outputfile)
 	fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
-	OUTF, _ = os.Create(filepath.Join(CFG.OutputFolder, *outputfile))
+	OUTF, _ = os.Create(xfile)
 	defer OUTF.Close()
+
+	if *outputGPX != "" {
+		yfile := filepath.Join(CFG.OutputFolder, *outputGPX)
+		fmt.Printf("Generating GPX %v\n", yfile)
+		GPXF, _ = os.Create(yfile)
+		defer GPXF.Close()
+		GPXF.WriteString(gpxheader)
+	}
+
 	var err error
 	DBH, err = sql.Open("sqlite3", CFG.Database)
 	if err != nil {
@@ -224,6 +275,8 @@ func main() {
 				if v.Type == type_combo {
 					//fmt.Printf("Calling combos %v\n", v.StreamID)
 					emitCombos(sx, sf[1])
+				} else if v.Type == type_entrant {
+					emitEntrants(sx, sf[1], v.NoPageTop)
 				} else {
 					//fmt.Printf("Calling bonuses %v\n", v.StreamID)
 					emitBonuses(sx, sf[1], v.NoPageTop)
@@ -231,6 +284,9 @@ func main() {
 			}
 		}
 
+	}
+	if GPXF != nil {
+		GPXF.WriteString("</gpx>\n")
 	}
 
 }
@@ -275,6 +331,21 @@ func emitBonuses(s int, sf string, nopage bool) {
 		B.HasWaffle = B.Waffle != ""
 		B.HasNotes = B.Notes != ""
 		B.AskPoints = askPoints != 0
+		if GPXF != nil {
+			B.Lat, B.Lon, err = coordsparser.Parse(strings.ReplaceAll(strings.ReplaceAll(B.Coords, "°", " "), "'", " "))
+			if err != nil {
+				fmt.Printf("%v Coords err:%v\n", B.BonusID, err)
+			} else {
+				GPXF.WriteString(fmt.Sprintf("<wpt lat=\"%v\" lon=\"%v\"><name>%v - %v</name>", B.Lat, B.Lon, B.BonusID, B.Title))
+				if CFG.Title != "" {
+					GPXF.WriteString(fmt.Sprintf("<cmt>%v</cmt>", CFG.Title))
+				}
+				if CFG.SymbolGPX != "" {
+					GPXF.WriteString(fmt.Sprintf("<sym>%v</sym>", CFG.SymbolGPX))
+				}
+				GPXF.WriteString("</wpt>\n")
+			}
+		}
 
 		u := url.QueryEscape(B.Image)
 		//fmt.Printf("Parsed %v; got %v\n", B.Image, u)
@@ -402,6 +473,88 @@ func emitCombos(s int, sf string) {
 
 }
 
+func emitEntrants(s int, sf string, nopage bool) {
+
+	sql := "SELECT EntrantID,IfNull(RiderName,''),IfNull(PillionName,''),IfNull(Bike,''),IfNull(BikeReg,''),OdoKms,Cohort "
+	sql += " FROM entrants "
+	if CFG.Streams[s].WhereString != "" {
+		sql += " WHERE " + CFG.Streams[s].WhereString
+	}
+	if CFG.Streams[s].BonusOrder != "" {
+		sql += " ORDER BY " + CFG.Streams[s].BonusOrder
+	}
+	//fmt.Printf("%v\n", sql)
+	rows, err := DBH.Query(sql)
+	if err != nil {
+		fmt.Printf("ERROR! %v\nproduced %v\n", sql, err)
+		return
+	}
+	NRex := 0
+	NLines := -1
+	if nopage {
+		OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
+	} else {
+		OUTF.WriteString("\n<div class='page'>\n")
+	}
+	for rows.Next() {
+		E := newEntrant()
+		odoKms := 0
+
+		err := rows.Scan(&E.EntrantID, &E.RiderName, &E.PillionName, &E.Bike, &E.BikeReg, &odoKms, &E.Cohort)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+
+		E.StreamID = CFG.Streams[s].StreamID
+		E.OdoKms = odoKms != 0
+
+		E.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+		if E.NewLine {
+			NLines++
+			if NLines >= CFG.Streams[s].LinesPerPage {
+				xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
+					E.NewLine, NLines, CFG.Streams[s].LinesPerPage)
+				OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+				NLines = 0
+			}
+		}
+
+		NRex++
+
+		E.ImageFolder = CFG.ImageFolder
+
+		streamTemplate := sf
+		if CFG.Streams[s].TemplateID != "" {
+			streamTemplate = CFG.Streams[s].TemplateID
+		}
+		xfile := filepath.Join(CFG.ProjectFolder, streamTemplate+".html")
+		if !fileExists(xfile) {
+			fmt.Printf("Stream %v has no template %v\n", CFG.Streams[s].StreamID, xfile)
+			rows.Close()
+			return
+		}
+		t, err := template.ParseFiles(xfile)
+		if err != nil {
+			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
+		}
+		err = t.Execute(OUTF, E)
+		if err != nil {
+			fmt.Printf("x %v\n", err)
+		}
+	}
+	if NLines < CFG.Streams[s].LinesPerPage {
+		NLines++
+		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
+		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+
+	}
+	OUTF.WriteString("</div>")
+	fmt.Printf("%v entrant records processed\n", NRex)
+	rows.Close()
+
+}
+
 func emitTopTail(F *os.File, xfile string) {
 
 	if !fileExists(xfile) {
@@ -434,6 +587,8 @@ func setFlags(b *Bonus) {
 			b.AlertR = true
 		case 'D':
 			b.AlertD = true
+		case 'N':
+			b.AlertN = true
 		}
 	}
 }

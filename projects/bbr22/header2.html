@@ -4,23 +4,37 @@
 <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" type="text/css" href="css/reboot.css">
-        <link rel="stylesheet" type="text/css" href="css/a4portrait.css">
-        <title>Bonuses</title>
+        <link rel="stylesheet" type="text/css" href="dox/reboot.css">
+        {{if .Landscape}}
+        <link rel="stylesheet" type="text/css" href="dox/a4landscape.css">
+        {{else}}
+        <link rel="stylesheet" type="text/css" href="dox/a4portrait.css">
+        {{end}}
+        <title>{{.Title}}</title>
         <style>
                 body {
                         font-family: Verdana, Geneva, Tahoma, sans-serif;
                         width: 297mm;
+                        font-size: 18pt;
                 }
 
                 h1 {
                         text-align: center;
-                        margin-bottom: 1.3em;
+                        margin-bottom: .1em;
                         margin-top: 0;
-                        font-size: 72pt;
+                        font-size: 40pt;
+                        color: black;
+                        font-weight: bold;
                 }
 
                 h2 {
+                        text-align: center;
+                        padding: 2em 0 1em 0;
+                        font-size: 30pt;
+
+                }
+
+                h3 {
                         text-align: center;
                         padding: 2em 0 1em 0;
                         font-size: larger;
@@ -29,6 +43,8 @@
 
                 h4 {
                         text-align: center;
+                        color: blue;
+                        font-size: 30pt;
                         margin-top: 0;
                 }
 
@@ -42,84 +58,11 @@
                 }
 
                 p {
-                        margin-top: 0;
+                        margin-top: 6pt;
                 }
 
                 li {
                         margin-bottom: 1em;
-                }
-
-                /* Receipt log blocks */
-                .rlblock1 {
-                        width: 60em;
-                        border: none;
-                        margin-left: auto;
-                        margin-right: auto;
-                        margin-bottom: 1em;
-                }
-
-                .rlblock1 td {
-                        width: 28em;
-                        border: solid;
-                        padding: .5em;
-                }
-
-                .rlblock2 {
-                        width: 60em;
-                        border: none;
-                        margin-left: auto;
-                        margin-right: auto;
-                        margin-bottom: .75em;
-                        border-spacing: .1em 0;
-                }
-
-                .rlblock2 td {
-                        width: 28em;
-                        border: solid;
-                        padding: .5em;
-                }
-
-                .rlblock3 {
-                        width: 60em;
-                        border: none;
-                        margin-left: auto;
-                        margin-right: auto;
-                        border-spacing: .1em 0;
-                }
-
-                .rlblock3 td {
-                        border: solid;
-                        padding: .5em;
-                }
-
-                .rlblock3 th,
-                .rlblock2 th {
-                        background-color: lightgray;
-                        border: solid;
-                }
-
-                td.top,
-                th.top {
-                        border-bottom: none;
-                }
-
-                td.bottom {
-                        border-top: none;
-                        margin-bottom: .5em;
-                }
-
-                .rlindex {
-                        width: 6em;
-                        text-align: center;
-                }
-
-                .rlplace {
-                        width: 15em;
-                        text-align: center;
-                }
-
-                strong {
-                        font-size: larger;
                 }
 
                 .label {
@@ -127,10 +70,57 @@
                         width: 10em;
                 }
 
+                .line   {
+                        margin-bottom: 1em;
+
+                }
+                .line strong {
+                        font-size: larger;
+                        vertical-align: middle;
+                }
+                .EntrantID,
+                .RiderName,
+                .PillionName,
+                .Bike, .BikeReg      {
+                        font-size: larger;
+                        padding-left: 2em;
+                        font-weight: bold;
+                }
+                .box            {
+                        font-size: 22pt;
+                }
+                .odobox         {
+                        border: solid 6px;
+                        padding-bottom: 0;
+                        padding-top: 1em;
+                        font-size: 28pt;
+                }
+                .col3           {
+                        display: inline-block;
+                        width: 12em;
+                        margin-bottom: 1.5em;
+                        text-align: right;
+                        vertical-align: text-bottom;
+                }
+                .col2           {
+                        display: inline-block;
+                        width: 18em;
+                        margin-bottom: 1.5em;
+                        text-align: right;
+                        vertical-align: text-bottom;
+                }
+                .col1           {
+                        display: inline-block;
+                        width: 50em;
+                        margin-bottom: 1.5em;
+                        text-align: center;
+                        vertical-align: text-bottom;
+                }
                 .vlabel {
                         vertical-align: middle;
-                        width: 6em;
+                        width: 16em;
                         text-align: right;
+                        display: inline-block;
                 }
 
                 .tall {
@@ -138,62 +128,153 @@
                 }
 
                 .box {
-                        border: solid;
+                        border: solid 6px;
                 }
 
-                .left   { clear: both; float: left; }
+                .left   { float: left; }
                 .right  { float: right; }
+
+                .left,
+                .right  {
+                        -box-sizing: border-box; 
+                        width: 470pt;
+                }
 
                 .signboxes {
                         border-spacing: 1em;
                 }
 
-                .bonus      { margin-bottom: 1em; margin-top: 1em; padding: 2em; page-break-inside: avoid;}
-                .BonusID    { display: inline-block; width: 3em; }
-                .Title      { display: inline-block; width: 18em; font-style: italic; }
-                .Points     { display: inline-block; width: 5em; font-weight: bold; border: solid; padding: 2px; text-align: center; }
+                .legend     { list-style-type: none; padding: 1em;  }
+                
+                
+                .short      { width: 140pt; }
+ 
+                
+                .pagebreak      { page-break-after: always; background-color: blue; }
+
                 .tenpct     { background: lightgray; }
-                .example    { border: dotted; padding: 15px; }
-                .icon       { width: 40px; }
+                .example    { border: dotted; padding: 15px; margin-left: auto; margin-right: auto; }
+                .icon       { width: 64px; vertical-align: middle; padding: 3px; }
+                .icon.big   { width: 64px; height: 64px; vertical-align: sub; }
+                .flags      {
+                        display: inline-block;
+                        width: 100%;
+                        height: 80px;
+                        border-bottom: solid 8px;
+                }
+
                 .email      { color: blue; text-decoration: none; font-weight: bold; }
 
-                .bonusimage { display: block; }
-                .bonusimage img    {
-                        
-                        width: 60em;
+                .label      { font-weight: normal; }
+
+                .coords         { 
+                        display: inline-block; 
+                        width: 100%; 
+                        text-align: center;
+                        font-size: 1.3em;
+                        border-top: none;
+                        border-bottom: solid 8px;
+                        height: 2.5em;
+                        padding: .3em;
+                        margin-top: 0;
+                }
+                .waffle         { 
+                        display: inline-block; 
+                        width: 96%; 
+                        font-size: 1.1em;
+                        border-top: none;
+                        border-right: solid 8px;
+                        border-left: solid 8px;
+                        border-bottom: solid 8px;
+                        height: 2.5em;
+                        padding: .26em;
+                        margin-top: 0;
+                        text-align: center;
+                        vertical-align: middle;
+                }
+                .Notes          {
+                        display: inline-block;
+                        width: 100%;
+                        height: 2.5em;
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        padding: .5em;
+                        text-align: center;
+                        vertical-align: middle;
+                }
+                .Title           {
+                        border-top: solid 8px;
+                        border-bottom: solid 8px;
+                        display: inline-block;
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        text-align: center;
+                        padding-top: .5em;
+                        padding-bottom: .5em;
+                        width: 100%;
+                }
+                .hide {
+                        border: none;
+                        background-color: white;
+                        color: white;
                 }
 
-                #frontpage { 
-                        border: double;
-                        color: blue; page-break-after: always; 
-                        width: 90%; height: 90%; margin-left: auto; margin-right: auto;
-                        margin-top: 2cm;
-                }
-                #frontpage img {
-                        height: 180px;
-                        margin: 2em 2em 0 2em;
-                }
-                #walkhdr { 
-                        margin: 2em;
-                        width: 90%;
-                        page-break-after: always; 
+                tr.question     { display:inline-block;  padding-bottom: .5em; }
+                td.nowrap       { display: table-cell; width: 140pt; }
+
+
+
+
+                .pages       {
+                        padding-left: 30pt;
                 }
 
-                #walkhdr p {
-                        font-size: 16pt;
+                .header       {
+                        font-size: 48pt;
+                        margin-bottom: 1em;
+                }
+                .header img   {
+                        vertical-align: middle;
+                }
+                p    {
+                                text-align: justify;
                 }
 
-                /**
-        .row    { margin-left: auto; margin-right: auto; }
+                .intro  { 
+                                
+                                width: 240mm;
+                                text-align: justify;
+                                font-size: 16pt;
+                                margin-left: auto;
+                                margin-right: auto;
+                        }
+                .intro p {
+                        font-size: 24pt;
+                        margin-bottom: 1em;
+                }
 
-        .column { float: left; }
+                .intro img.center {
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
+                }
 
-        .left, .right { width: 10%; }
+   .page {
+        display: block;
+        height: 280mm;
+     counter-increment: page;
+     page-break-after: always;
+    }
 
-        .middle {   width: 80%; }
-        
-**/
+   /*page numbers*/
+    .nopage {
+        display: block;
+        counter-increment: page;
+    }
+
         </style>
+
 </head>
 
 <body>
+<div class="pages">

@@ -1,0 +1,64 @@
+<br><br><br>
+<div class="entrant {{.StreamID}}">
+    <div class="header"><img src="{{.ImageFolder}}/ibauk.png" alt="" style="height:150px;width:190px;"> The Brit Butt 2022</div>
+    <div class="entrant">
+        <div class="line">
+            <span class="vlabel">Rally number: </span>
+            <span class="EntrantID">{{.EntrantID}}</span> 
+        </div>
+        <div class="line">
+            <span class="vlabel">Rider name: </span>
+            <span class="RiderName">{{.RiderName}}</span>
+        </div>
+        <div class="line">
+            <span class="vlabel">Pillion name: </span>
+            <span class="PillionName">{{.PillionName}}</span>
+        </div>
+        <div class="line">
+            <span class="vlabel">Bike make &amp; model: </span>
+            <span class="Bike">{{.Bike}}</span>
+        </div>
+        <div class="line">
+            <span class="vlabel">Registration:</span>
+            <span class="BikeReg">{{.BikeReg}}</span>
+        </div>
+        <div class="line">
+            <h3>TECHNICAL INSPECTION</h3>
+            <span class="col3">Licence <span class="box"> &nbsp;&nbsp;&nbsp;</span></span>
+            <span class="col3">Insurance <span class="box"> &nbsp;&nbsp;&nbsp;</span></span>
+            <span class="col3">MOT <span class="box"> &nbsp;&nbsp;&nbsp;</span></span>
+            <span class="col2">Fuel cell <span class="box"> &nbsp;&nbsp;&nbsp;</span></span>
+            <span class="col2">General inspection <span class="box"> &nbsp;&nbsp;&nbsp;</span></span>
+            <span class="col1">Ancilliaries <span class="box"> &nbsp;&nbsp;&nbsp;</span> Lights, horn, etc ________________</span>
+            <span class="col3"></span>
+            <span class="col3">Tyres (F) <span class="box"> &nbsp;&nbsp;&nbsp;</span> ______</span>
+            <span class="col3">(R) <span class="box"> &nbsp;&nbsp;&nbsp;</span> ______</span>
+            <pan class="col1"><br>Inspector signature ____________________</span>
+        </div>
+        <div class="line">
+            <h3>ODOMETER CHECK</h3>
+            <span class="col2">Start 
+                <span class="odobox">
+                    &nbsp;&nbsp; | &nbsp;&nbsp;| &nbsp;&nbsp;| &nbsp;&nbsp;| &nbsp;&nbsp;| &nbsp;&nbsp;
+                </span>
+            </span>
+            <span class="col2">Finish 
+                <span class="odobox">
+                    &nbsp;&nbsp; | &nbsp;&nbsp;| &nbsp;&nbsp;| &nbsp;&nbsp;| &nbsp;&nbsp;| &nbsp;&nbsp;
+                </span>
+            </span>
+            <span class="col2">Trip meter including tenths</span>
+            <span class="col2">
+                <br>
+                <span class="odobox">
+                     &nbsp;&nbsp;&nbsp;| &nbsp;&nbsp;| &nbsp;&nbsp;
+                    &#9864; &nbsp;&nbsp;&nbsp;
+                </span>
+            </span>
+            <span class="col2">Odo counts &nbsp; 
+                {{if .OdoKms}}miles / <strong>KMS</strong>{{else}}<strong>MILES</strong> / kms{{end}}
+            </span>
+        </div>
+    </div>
+</div>
+

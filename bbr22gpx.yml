@@ -1,17 +1,17 @@
-# bbr22.yml
+# bbr22gpx.yml
 #
+# I produce a GPX from the ScoreMaster database
 
 
-title: 2022 Brit Butt Rally
+title: 2022 Brit Butt Rally GPX
 
-description: A4 portrait, 1 column photos
+description: Standard GPX file
 
 
 # Standard filepath specification, relative to CWD
-projectfolder: \projects\rbook\projects\bbr22
+projectfolder: \projects\rbook\projects\bbr22gpx
 outputfolder: \sm-installs\bbr22
-outputfile: BBR22Rallybook.html
-outputgpx: BBR22x.gpx
+outputfile: BBR22gpx.gpx
 database: \sm-installs\bbr22\sm\ScoreMaster.db
 
 # URL format, relative to output folder
@@ -20,20 +20,19 @@ imagefolder: sm/images/
 # default is portrait
 landscape: false
 
-symbolgpx: "Circle, Red"
 
 # Each entry in sections is the name of a static template with limited
 # configuration variables. Entries starting with 'stream.' refer to
 # streams which process either bonuses or combos. Streams are defined
 # below.
-sections: [  header, frontpage, introletter,bonusclaiming, stream.bonuses, rbheader, stream.rbstart,stream.rbonuses,comboheader, stream.combos, footer]
+sections: [  header, stream.bonuses, footer]
 
 # StreamID is the name of the template file.
 streams:
   - { 
       streamid:     bonuses, 
       type:         bonus,
-      wherestring:  GroupName is null OR GroupName='',
+      wherestring:  GroupName is null,
       bonusorder:   BonusID,
       maxperline:   1,
       linesperpage: 3,
