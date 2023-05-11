@@ -1,0 +1,38 @@
+# sas23gpx.yml
+#
+# I produce a GPX from the ScoreMaster database
+
+
+title: 2023 SAS Tour
+
+description: Standard GPX file
+
+
+# Standard filepath specification, relative to CWD
+projectfolder: \projects\rbook\projects\sas23gpx
+outputfolder: \sm-installs\sas23
+outputfile: SAS23gpx.html
+outputgpx: SAS23.gpx
+linkgpx: https://www.google.co.uk/maps/search/
+database: \sm-installs\sas23\sm\ScoreMaster.db
+
+# URL format, relative to output folder
+imagefolder: sm/images/
+
+# default is portrait
+landscape: false
+
+
+# Each entry in sections is the name of a static template with limited
+# configuration variables. Entries starting with 'stream.' refer to
+# streams which process either bonuses or combos. Streams are defined
+# below.
+sections: [  header, stream.bonuses, footer]
+
+# StreamID is the name of the template file.
+streams:
+  - { 
+      streamid:     bonuses, 
+      type:         bonus,
+      bonusorder:   BonusID
+    }

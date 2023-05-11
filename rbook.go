@@ -15,7 +15,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const apptitle = "RBook v1.1"
+const apptitle = "RBook v1.3"
 const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
@@ -43,7 +43,20 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1
 http://www.topografix.com/GPX/1/1/gpx.xsd" 
 xmlns="http://www.topografix.com/GPX/1/1" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+`
+const BonusSQL = `SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),
+Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,IfNull(Image,''),IfNull(Waffle,''),IfNull(Coords,''),
+IfNull(Question,''),IfNull(Answer,''),AskPoints
+ FROM bonuses 
+`
 
+const ComboSQL = `SELECT ComboID,BriefDesc,ScoreMethod,MinimumTicks,ScorePoints,IfNull(Bonuses,''),
+Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Compulsory
+ FROM combinations 
+`
+
+const EntrantSQL = `SELECT EntrantID,IfNull(RiderName,''),IfNull(PillionName,''),IfNull(Bike,''),IfNull(BikeReg,''),OdoKms,Cohort
+ FROM entrants 
 `
 
 type BonusStream struct {
@@ -71,11 +84,15 @@ var CFG struct {
 	Streams       []BonusStream `yaml:"streams"`
 	Landscape     bool          `yaml:"landscape"`
 	SymbolGPX     string        `yaml:"symbolgpx"`
+	LinkGPX       string        `yaml:"linkgpx"`
+	BonusSQL      string        `yaml:"bonussql"`
+	ComboSQL      string        `yaml:"combosql"`
+	EntrantSQL    string        `yaml:"entrantsql"`
 }
 
 type Bonus struct {
 	BonusID                                                string
-	Title                                                  string
+	BriefDesc                                              string
 	Points                                                 int
 	Flags                                                  string
 	Notes                                                  string
@@ -237,7 +254,7 @@ func main() {
 
 	var xfile string
 
-	fmt.Printf("%v\nCopyright (c) 2022 Bob Stammers\n", apptitle)
+	fmt.Printf("%v\nCopyright (c) 2023 Bob Stammers\n", apptitle)
 	xfile = filepath.Join(CFG.OutputFolder, *outputfile)
 	fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
 	OUTF, _ = os.Create(xfile)
@@ -293,10 +310,12 @@ func main() {
 
 func emitBonuses(s int, sf string, nopage bool) {
 
-	sql := "SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),"
-	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,IfNull(Image,''),IfNull(Waffle,''),IfNull(Coords,''),"
-	sql += "IfNull(Question,''),IfNull(Answer,''),AskPoints"
-	sql += " FROM bonuses "
+	var sql string
+	if CFG.BonusSQL != "" {
+		sql = CFG.BonusSQL
+	} else {
+		sql = BonusSQL
+	}
 	if CFG.Streams[s].WhereString != "" {
 		sql += " WHERE " + CFG.Streams[s].WhereString
 	}
@@ -320,7 +339,7 @@ func emitBonuses(s int, sf string, nopage bool) {
 		B := newBonus()
 		askPoints := 0
 
-		err := rows.Scan(&B.BonusID, &B.Title, &B.Points, &B.Flags, &B.Notes,
+		err := rows.Scan(&B.BonusID, &B.BriefDesc, &B.Points, &B.Flags, &B.Notes,
 			&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Image, &B.Waffle, &B.Coords,
 			&B.Question, &B.Answer, &askPoints)
 		if err != nil {
@@ -336,9 +355,12 @@ func emitBonuses(s int, sf string, nopage bool) {
 			if err != nil {
 				fmt.Printf("%v Coords err:%v\n", B.BonusID, err)
 			} else {
-				GPXF.WriteString(fmt.Sprintf("<wpt lat=\"%v\" lon=\"%v\"><name>%v - %v</name>", B.Lat, B.Lon, B.BonusID, B.Title))
+				GPXF.WriteString(fmt.Sprintf("<wpt lat=\"%v\" lon=\"%v\"><name>%v-%v</name>", B.Lat, B.Lon, xmlsafe(B.BonusID), xmlsafe(B.BriefDesc)))
 				if CFG.Title != "" {
-					GPXF.WriteString(fmt.Sprintf("<cmt>%v</cmt>", CFG.Title))
+					GPXF.WriteString(fmt.Sprintf("<cmt>%v</cmt>", xmlsafe(CFG.Title)))
+				}
+				if CFG.LinkGPX != "" {
+					GPXF.WriteString(fmt.Sprintf(`<link href="%v%v,%v" />`, CFG.LinkGPX, B.Lat, B.Lon))
 				}
 				if CFG.SymbolGPX != "" {
 					GPXF.WriteString(fmt.Sprintf("<sym>%v</sym>", CFG.SymbolGPX))
@@ -351,17 +373,19 @@ func emitBonuses(s int, sf string, nopage bool) {
 		//fmt.Printf("Parsed %v; got %v\n", B.Image, u)
 		B.Image = u
 
-		B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
-		if B.NewLine {
-			NLines++
-			if NLines >= CFG.Streams[s].LinesPerPage {
-				xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
-					B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-				OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
-				NLines = 0
+		if CFG.Streams[s].MaxPerLine > 0 {
+			B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+			if B.NewLine {
+				NLines++
+				if NLines >= CFG.Streams[s].LinesPerPage {
+					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
+						B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
+					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					NLines = 0
+				}
 			}
-		}
 
+		}
 		NRex++
 
 		B.ImageFolder = CFG.ImageFolder
@@ -402,9 +426,12 @@ func emitBonuses(s int, sf string, nopage bool) {
 
 func emitCombos(s int, sf string) {
 
-	sql := "SELECT ComboID,BriefDesc,ScoreMethod,MinimumTicks,ScorePoints,IfNull(Bonuses,''),"
-	sql += "Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Compulsory"
-	sql += " FROM combinations "
+	var sql string
+	if CFG.ComboSQL != "" {
+		sql = CFG.ComboSQL
+	} else {
+		sql = ComboSQL
+	}
 	if CFG.Streams[s].WhereString != "" {
 		sql += " WHERE " + CFG.Streams[s].WhereString
 	}
@@ -432,14 +459,16 @@ func emitCombos(s int, sf string) {
 
 		B.StreamID = CFG.Streams[s].StreamID
 
-		B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
-		if B.NewLine {
-			NLines++
-			if NLines >= CFG.Streams[s].LinesPerPage {
-				xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
-					B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-				OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
-				NLines = 0
+		if CFG.Streams[s].MaxPerLine > 0 {
+			B.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+			if B.NewLine {
+				NLines++
+				if NLines >= CFG.Streams[s].LinesPerPage {
+					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
+						B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
+					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					NLines = 0
+				}
 			}
 		}
 
@@ -475,8 +504,12 @@ func emitCombos(s int, sf string) {
 
 func emitEntrants(s int, sf string, nopage bool) {
 
-	sql := "SELECT EntrantID,IfNull(RiderName,''),IfNull(PillionName,''),IfNull(Bike,''),IfNull(BikeReg,''),OdoKms,Cohort "
-	sql += " FROM entrants "
+	var sql string
+	if CFG.EntrantSQL != "" {
+		sql = CFG.EntrantSQL
+	} else {
+		sql = EntrantSQL
+	}
 	if CFG.Streams[s].WhereString != "" {
 		sql += " WHERE " + CFG.Streams[s].WhereString
 	}
@@ -508,14 +541,16 @@ func emitEntrants(s int, sf string, nopage bool) {
 		E.StreamID = CFG.Streams[s].StreamID
 		E.OdoKms = odoKms != 0
 
-		E.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
-		if E.NewLine {
-			NLines++
-			if NLines >= CFG.Streams[s].LinesPerPage {
-				xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
-					E.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-				OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
-				NLines = 0
+		if CFG.Streams[s].MaxPerLine > 0 {
+			E.NewLine = NRex%CFG.Streams[s].MaxPerLine == 0
+			if E.NewLine {
+				NLines++
+				if NLines >= CFG.Streams[s].LinesPerPage {
+					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
+						E.NewLine, NLines, CFG.Streams[s].LinesPerPage)
+					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					NLines = 0
+				}
 			}
 		}
 
