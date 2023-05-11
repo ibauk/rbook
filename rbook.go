@@ -12,7 +12,6 @@ import (
 
 	"github.com/flopp/go-coordsparser"
 	_ "github.com/mattn/go-sqlite3"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const apptitle = "RBook v1.3"
@@ -22,7 +21,7 @@ I print rally books using data supplied by Rallymasters in a standard format
 
 var yml = flag.String("cfg", "rbook.yml", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
-var outputfile = flag.String("to", "", "Output filename. Default to YAML config")
+var outputfile = flag.String("book", "", "Output filename. Default to YAML config")
 var outputGPX = flag.String("gpx", "", "Output GPX. Default to YAML config")
 
 var DBH *sql.DB
@@ -36,162 +35,6 @@ const type_entrant = "entrant"
 
 // const type_static = "static"
 const stream_prefix = "stream"
-
-const gpxheader = `<?xml version="1.0" encoding="utf-8"?>
-<gpx creator="Bob Stammers (` + apptitle + `)" version="1.1"
-xsi:schemaLocation="http://www.topografix.com/GPX/1/1 
-http://www.topografix.com/GPX/1/1/gpx.xsd" 
-xmlns="http://www.topografix.com/GPX/1/1" 
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-`
-const BonusSQL = `SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),
-Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,IfNull(Image,''),IfNull(Waffle,''),IfNull(Coords,''),
-IfNull(Question,''),IfNull(Answer,''),AskPoints
- FROM bonuses 
-`
-
-const ComboSQL = `SELECT ComboID,BriefDesc,ScoreMethod,MinimumTicks,ScorePoints,IfNull(Bonuses,''),
-Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Compulsory
- FROM combinations 
-`
-
-const EntrantSQL = `SELECT EntrantID,IfNull(RiderName,''),IfNull(PillionName,''),IfNull(Bike,''),IfNull(BikeReg,''),OdoKms,Cohort
- FROM entrants 
-`
-
-type BonusStream struct {
-	StreamID     string `yaml:"streamid"`
-	Type         string `yaml:"type"` // bonus, combo, static
-	WhereString  string `yaml:"wherestring"`
-	BonusOrder   string `yaml:"bonusorder"`
-	MaxPerLine   int    `yaml:"maxperline"`
-	LinesPerPage int    `yaml:"linesperpage"`
-	BrPerLine    int    `yaml:"brperline"`
-	TemplateID   string `yaml:"template"`
-	NoPageTop    bool   `yaml:"nopagetop"`
-}
-
-var CFG struct {
-	Title         string        `yaml:"title"`
-	Description   string        `yaml:"description"`
-	ProjectFolder string        `yaml:"projectfolder"`
-	OutputFolder  string        `yaml:"outputfolder"`
-	OutputFile    string        `yaml:"outputfile"`
-	OutputGPX     string        `yaml:"outputgpx"`
-	Database      string        `yaml:"database"`
-	ImageFolder   string        `yaml:"imagefolder"`
-	Sections      []string      `yaml:"sections"`
-	Streams       []BonusStream `yaml:"streams"`
-	Landscape     bool          `yaml:"landscape"`
-	SymbolGPX     string        `yaml:"symbolgpx"`
-	LinkGPX       string        `yaml:"linkgpx"`
-	BonusSQL      string        `yaml:"bonussql"`
-	ComboSQL      string        `yaml:"combosql"`
-	EntrantSQL    string        `yaml:"entrantsql"`
-}
-
-type Bonus struct {
-	BonusID                                                string
-	BriefDesc                                              string
-	Points                                                 int
-	Flags                                                  string
-	Notes                                                  string
-	Waffle                                                 string
-	Coords                                                 string
-	Image                                                  string
-	Cat1                                                   int
-	Cat2                                                   int
-	Cat3                                                   int
-	Cat4                                                   int
-	Cat5                                                   int
-	Cat6                                                   int
-	Cat7                                                   int
-	Cat8                                                   int
-	Cat9                                                   int
-	NewLine                                                bool
-	StreamID                                               string
-	ImageFolder                                            string
-	AlertT, AlertR, AlertF, AlertB, AlertD, AlertA, AlertN bool
-	Question                                               string
-	Answer                                                 string
-	HasWaffle                                              bool
-	HasNotes                                               bool
-	AskPoints                                              bool
-	Lat                                                    float64
-	Lon                                                    float64
-}
-type ComboBonus struct {
-	BonusID   string
-	BriefDesc string
-}
-type Combo struct {
-	ComboID      string
-	BriefDesc    string
-	ScoreMethod  int
-	MinimumTicks int
-	ScorePoints  string
-	BonusList    string
-	Bonuses      []ComboBonus
-	Cat1         int
-	Cat2         int
-	Cat3         int
-	Cat4         int
-	Cat5         int
-	Cat6         int
-	Cat7         int
-	Cat8         int
-	Cat9         int
-	Compulsory   bool
-	NewLine      bool
-	StreamID     string
-}
-
-type Entrant struct {
-	EntrantID   int
-	RiderName   string
-	PillionName string
-	Bike        string
-	BikeReg     string
-	OdoKms      bool
-	Cohort      int
-	NewLine     bool
-	StreamID    string
-	ImageFolder string
-}
-
-func newBonus() *Bonus {
-
-	var b Bonus
-
-	b.Points = 1
-	b.Waffle = ""
-	b.Coords = ""
-	b.Image = ""
-	b.NewLine = false
-	b.ImageFolder = CFG.ImageFolder
-
-	return &b
-
-}
-
-func newCombo() *Combo {
-
-	var b Combo
-
-	b.Compulsory = false
-	b.MinimumTicks = 0
-	b.NewLine = false
-
-	return &b
-
-}
-
-func newEntrant() *Entrant {
-
-	var e Entrant
-
-	return &e
-}
 
 func fileExists(x string) bool {
 
@@ -217,48 +60,17 @@ func init() {
 	loadConfig()
 }
 
-func loadConfig() {
-
-	configPath := *yml
-
-	if !fileExists(configPath) {
-		fmt.Printf("Can't find config file %v\n", configPath)
-		return
-	}
-
-	file, err := os.Open(configPath)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	D := yaml.NewDecoder(file)
-	err = D.Decode(&CFG)
-	if err != nil {
-		panic(err)
-	}
-
-	if *outputfile == "" {
-		*outputfile = CFG.OutputFile
-		if *outputfile == "" {
-			fmt.Println("Must specify an outputfile name")
-			os.Exit(1)
-		}
-	}
-	if *outputGPX == "" {
-		*outputGPX = CFG.OutputGPX
-	}
-	fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
-}
 func main() {
 
 	var xfile string
 
 	fmt.Printf("%v\nCopyright (c) 2023 Bob Stammers\n", apptitle)
-	xfile = filepath.Join(CFG.OutputFolder, *outputfile)
-	fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
-	OUTF, _ = os.Create(xfile)
-	defer OUTF.Close()
+	if *outputfile != "" && *outputfile != "none" {
+		xfile = filepath.Join(CFG.OutputFolder, *outputfile)
+		fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
+		OUTF, _ = os.Create(xfile)
+		defer OUTF.Close()
+	}
 
 	if *outputGPX != "" {
 		yfile := filepath.Join(CFG.OutputFolder, *outputGPX)
@@ -284,7 +96,9 @@ func main() {
 
 			xfile = filepath.Join(CFG.ProjectFolder, sf[0]+".html")
 
-			emitTopTail(OUTF, xfile)
+			if OUTF != nil {
+				emitTopTail(OUTF, xfile)
+			}
 			continue
 		}
 		for sx, v := range CFG.Streams {
@@ -303,7 +117,7 @@ func main() {
 
 	}
 	if GPXF != nil {
-		GPXF.WriteString("</gpx>\n")
+		completeGPX()
 	}
 
 }
@@ -330,10 +144,12 @@ func emitBonuses(s int, sf string, nopage bool) {
 	}
 	NRex := 0
 	NLines := -1
-	if nopage {
-		OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
-	} else {
-		OUTF.WriteString("\n<div class='page'>\n")
+	if OUTF != nil {
+		if nopage {
+			OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
+		} else {
+			OUTF.WriteString("\n<div class='page'>\n")
+		}
 	}
 	for rows.Next() {
 		B := newBonus()
@@ -355,17 +171,7 @@ func emitBonuses(s int, sf string, nopage bool) {
 			if err != nil {
 				fmt.Printf("%v Coords err:%v\n", B.BonusID, err)
 			} else {
-				GPXF.WriteString(fmt.Sprintf("<wpt lat=\"%v\" lon=\"%v\"><name>%v-%v</name>", B.Lat, B.Lon, xmlsafe(B.BonusID), xmlsafe(B.BriefDesc)))
-				if CFG.Title != "" {
-					GPXF.WriteString(fmt.Sprintf("<cmt>%v</cmt>", xmlsafe(CFG.Title)))
-				}
-				if CFG.LinkGPX != "" {
-					GPXF.WriteString(fmt.Sprintf(`<link href="%v%v,%v" />`, CFG.LinkGPX, B.Lat, B.Lon))
-				}
-				if CFG.SymbolGPX != "" {
-					GPXF.WriteString(fmt.Sprintf("<sym>%v</sym>", CFG.SymbolGPX))
-				}
-				GPXF.WriteString("</wpt>\n")
+				writeWaypoint(B.Lat, B.Lon, B.BonusID, B.BriefDesc)
 			}
 		}
 
@@ -380,7 +186,9 @@ func emitBonuses(s int, sf string, nopage bool) {
 				if NLines >= CFG.Streams[s].LinesPerPage {
 					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
 						B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					if OUTF != nil {
+						OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					}
 					NLines = 0
 				}
 			}
@@ -406,19 +214,25 @@ func emitBonuses(s int, sf string, nopage bool) {
 		if err != nil {
 			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 		}
-		err = t.Execute(OUTF, B)
-		if err != nil {
-			fmt.Printf("x %v\n", err)
+		if OUTF != nil {
+			err = t.Execute(OUTF, B)
+			if err != nil {
+				fmt.Printf("x %v\n", err)
+			}
 		}
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		if OUTF != nil {
+			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		}
 
 	}
-	OUTF.WriteString("</div>")
+	if OUTF != nil {
+		OUTF.WriteString("</div>")
+	}
 	fmt.Printf("%v bonus records processed\n", NRex)
 	rows.Close()
 
@@ -446,7 +260,9 @@ func emitCombos(s int, sf string) {
 	}
 	NRex := 0
 	NLines := -1
-	OUTF.WriteString("<div class='page'>")
+	if OUTF != nil {
+		OUTF.WriteString("<div class='page'>")
+	}
 	for rows.Next() {
 
 		B := newCombo()
@@ -466,7 +282,9 @@ func emitCombos(s int, sf string) {
 				if NLines >= CFG.Streams[s].LinesPerPage {
 					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
 						B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					if OUTF != nil {
+						OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					}
 					NLines = 0
 				}
 			}
@@ -484,19 +302,24 @@ func emitCombos(s int, sf string) {
 		if err != nil {
 			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 		}
-		err = t.Execute(OUTF, B)
-		if err != nil {
-			fmt.Printf("x %v\n", err)
+		if OUTF != nil {
+			err = t.Execute(OUTF, B)
+			if err != nil {
+				fmt.Printf("x %v\n", err)
+			}
 		}
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		if OUTF != nil {
+			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		}
 	}
-
-	OUTF.WriteString("</div>")
+	if OUTF != nil {
+		OUTF.WriteString("</div>")
+	}
 	fmt.Printf("%v Combo records processed\n", NRex)
 	rows.Close()
 
@@ -524,10 +347,12 @@ func emitEntrants(s int, sf string, nopage bool) {
 	}
 	NRex := 0
 	NLines := -1
-	if nopage {
-		OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
-	} else {
-		OUTF.WriteString("\n<div class='page'>\n")
+	if OUTF != nil {
+		if nopage {
+			OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
+		} else {
+			OUTF.WriteString("\n<div class='page'>\n")
+		}
 	}
 	for rows.Next() {
 		E := newEntrant()
@@ -548,7 +373,9 @@ func emitEntrants(s int, sf string, nopage bool) {
 				if NLines >= CFG.Streams[s].LinesPerPage {
 					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
 						E.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					if OUTF != nil {
+						OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					}
 					NLines = 0
 				}
 			}
@@ -572,19 +399,25 @@ func emitEntrants(s int, sf string, nopage bool) {
 		if err != nil {
 			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 		}
-		err = t.Execute(OUTF, E)
-		if err != nil {
-			fmt.Printf("x %v\n", err)
+		if OUTF != nil {
+			err = t.Execute(OUTF, E)
+			if err != nil {
+				fmt.Printf("x %v\n", err)
+			}
 		}
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		if OUTF != nil {
+			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		}
 
 	}
-	OUTF.WriteString("</div>")
+	if OUTF != nil {
+		OUTF.WriteString("</div>")
+	}
 	fmt.Printf("%v entrant records processed\n", NRex)
 	rows.Close()
 
