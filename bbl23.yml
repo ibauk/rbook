@@ -8,13 +8,16 @@ description: A4 portrait, 2 column photos
 
 
 # Standard filepath specification, relative to CWD
-projectfolder: \projects\rbook\projects\bbl23
-outputfolder: \sm-installs\bbl23
-outputfile: BBL23Rallybook.html
+projectFolder: \projects\rbook\projects\bbl23
+outputFolder: \sm-installs\bbl23
+rallybookFile: BBL23Rallybook.html
 database: \sm-installs\bbl23\sm\ScoreMaster.db
 
+generateGPX:
+  outputFile: BBL23.gpx
+
 # URL format, relative to output folder
-imagefolder: sm/images/
+imageFolder: sm/images/
 
 # default is portrait
 landscape: false

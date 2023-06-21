@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	_ "embed"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -21,6 +23,48 @@ Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Compulsory
 const EntrantSQL = `SELECT EntrantID,IfNull(RiderName,''),IfNull(PillionName,''),IfNull(Bike,''),IfNull(BikeReg,''),OdoKms,Cohort
  FROM entrants 
 `
+
+const htmlhead1 = `
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" >
+<title>RBook doc</title>
+<style>
+`
+
+const htmlhead2 = `
+</style>
+</head>
+
+<body>
+<div class="pages">
+`
+
+const htmlfoot = `
+</div> <!-- pages -->
+</body>
+</html>
+`
+
+// const type_bonus = "bonus"
+const type_combo = "combo"
+
+const type_entrant = "entrant"
+
+// const type_static = "static"
+const stream_prefix = "stream"
+
+//go:embed css/reboot.css
+var css_reboot string
+
+//go:embed css/a4portrait.css
+var css_a4portrait string
+
+//go:embed css/a4landscape.css
+var css_a4landscape string
 
 type BonusStream struct {
 	StreamID     string `yaml:"streamid"`
@@ -54,7 +98,7 @@ var CFG struct {
 type Bonus struct {
 	BonusID                                                string
 	BriefDesc                                              string
-	Points                                                 int
+	Points                                                 string
 	Flags                                                  string
 	Notes                                                  string
 	Waffle                                                 string
@@ -124,7 +168,7 @@ func newBonus() *Bonus {
 
 	var b Bonus
 
-	b.Points = 1
+	b.Points = "1"
 	b.Waffle = ""
 	b.Coords = ""
 	b.Image = ""
@@ -159,13 +203,17 @@ func loadConfig() {
 	configPath := *yml
 
 	if !fileExists(configPath) {
-		fmt.Printf("Can't find config file %v\n", configPath)
-		return
+		configPath += ".yml"
+		if !fileExists(configPath) {
+			fmt.Printf("Can't find config file %v\n", configPath)
+			os.Exit(1)
+		}
 	}
 
+	fmt.Printf("Loading config %v\n", configPath)
 	file, err := os.Open(configPath)
 	if err != nil {
-		return
+		panic(err)
 	}
 	defer file.Close()
 
@@ -175,17 +223,16 @@ func loadConfig() {
 		panic(err)
 	}
 
-	/*
+	if *outputfile == "" {
+		*outputfile = CFG.OutputFile
 		if *outputfile == "" {
-			*outputfile = CFG.OutputFile
-			if *outputfile == "" {
-				fmt.Println("Must specify an outputfile name")
-				os.Exit(1)
-			}
+			fmt.Println("Must specify an outputfile name")
+			os.Exit(1)
 		}
-	*/
+	}
+
 	if *outputGPX == "" {
 		*outputGPX = CFG.GPX.OutputGPX
 	}
-	fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
+	//fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
 }
