@@ -1,0 +1,63 @@
+# 12days.yml
+#
+
+
+title: 12daysEU 2023
+
+description: 12 days European Tour 2023
+
+
+# Standard filepath specification, relative to CWD
+projectfolder: projects\12days
+outputfolder: \sm-installs\12days
+outputfile: 12daysRallybook.html
+outputgpx: 12days.gpx
+database: \sm-installs\12days\sm\RealData.db
+
+# URL format, relative to output folder
+imagefolder: sm/images/
+
+# default is portrait
+landscape: false
+
+symbolgpx: "Circle, Green"
+
+linkgpx: https://www.google.ch/maps/search/
+
+# Each entry in sections is the name of a static template with limited
+# configuration variables. Entries starting with 'stream.' refer to
+# streams which process either bonuses or combos. Streams are defined
+# below.
+sections: [  header, stream.bonuses, footer]
+
+# StreamID is the name of the template file.
+streams:
+  - { 
+      streamid:     bonuses, 
+      type:         bonus,
+      wherestring:  ,
+      bonusorder:   BonusID,
+      maxperline:   1,
+      linesperpage: 3,
+      brperline: 34
+    }
+  - { 
+      streamid:     combos,
+      type:       combo,
+      wherestring:  , 
+      bonusorder: ComboID ,
+      maxperline: 1,
+      linesperpage: 6,
+      brperline: 5
+    }
+
+
+bonussql: "SELECT BonusCode || '-' || CodeSuffix || '-' || BType As BonusID,BriefDesc,Points 
+,'','',0,0,0,0,0,0,0,0,0,'','',Coords,'','',0
+ FROM RealBonuses"
+
+
+#const BonusSQL = `SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),
+#Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,IfNull(Image,''),IfNull(Waffle,''),IfNull(Coords,''),
+#IfNull(Question,''),IfNull(Answer,''),AskPoints
+# FROM bonuses 

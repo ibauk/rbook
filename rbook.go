@@ -8,19 +8,22 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+
+	_ "embed"
 
 	"github.com/flopp/go-coordsparser"
 	_ "github.com/mattn/go-sqlite3"
 	yaml "gopkg.in/yaml.v2"
 )
 
-const apptitle = "RBook v1.3"
+const apptitle = "RBook v1.4"
 const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
 
-var yml = flag.String("cfg", "rbook.yml", "Name of the YAML configuration")
+var yml = flag.String("cfg", "", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
 var outputfile = flag.String("to", "", "Output filename. Default to YAML config")
 var outputGPX = flag.String("gpx", "", "Output GPX. Default to YAML config")
@@ -37,6 +40,15 @@ const type_entrant = "entrant"
 // const type_static = "static"
 const stream_prefix = "stream"
 
+//go:embed css/reboot.css
+var css_reboot string
+
+//go:embed css/a4portrait.css
+var css_a4portrait string
+
+//go:embed css/a4landscape.css
+var css_a4landscape string
+
 const gpxheader = `<?xml version="1.0" encoding="utf-8"?>
 <gpx creator="Bob Stammers (` + apptitle + `)" version="1.1"
 xsi:schemaLocation="http://www.topografix.com/GPX/1/1 
@@ -44,6 +56,7 @@ http://www.topografix.com/GPX/1/1/gpx.xsd"
 xmlns="http://www.topografix.com/GPX/1/1" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 `
+
 const BonusSQL = `SELECT BonusID,BriefDesc,Points,IfNull(Flags,''),IfNull(Notes,''),
 Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,IfNull(Image,''),IfNull(Waffle,''),IfNull(Coords,''),
 IfNull(Question,''),IfNull(Answer,''),AskPoints
@@ -57,6 +70,31 @@ Cat1,Cat2,Cat3,Cat4,Cat5,Cat6,Cat7,Cat8,Cat9,Compulsory
 
 const EntrantSQL = `SELECT EntrantID,IfNull(RiderName,''),IfNull(PillionName,''),IfNull(Bike,''),IfNull(BikeReg,''),OdoKms,Cohort
  FROM entrants 
+`
+
+const htmlhead1 = `
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" >
+<title>RBook doc</title>
+<style>
+`
+
+const htmlhead2 = `
+</style>
+</head>
+
+<body>
+<div class="pages">
+`
+
+const htmlfoot = `
+</div> <!-- pages -->
+</body>
+</html>
 `
 
 type BonusStream struct {
@@ -93,7 +131,7 @@ var CFG struct {
 type Bonus struct {
 	BonusID                                                string
 	BriefDesc                                              string
-	Points                                                 int
+	Points                                                 string
 	Flags                                                  string
 	Notes                                                  string
 	Waffle                                                 string
@@ -163,7 +201,7 @@ func newBonus() *Bonus {
 
 	var b Bonus
 
-	b.Points = 1
+	b.Points = "1"
 	b.Waffle = ""
 	b.Coords = ""
 	b.Image = ""
@@ -215,6 +253,7 @@ func init() {
 		os.Exit(1)
 	}
 	loadConfig()
+
 }
 
 func loadConfig() {
@@ -222,8 +261,11 @@ func loadConfig() {
 	configPath := *yml
 
 	if !fileExists(configPath) {
-		fmt.Printf("Can't find config file %v\n", configPath)
-		return
+		configPath += ".yml"
+		if !fileExists(configPath) {
+			fmt.Printf("Can't find config file %v use -cfg filename\n", configPath)
+			os.Exit(1)
+		}
 	}
 
 	file, err := os.Open(configPath)
@@ -248,7 +290,7 @@ func loadConfig() {
 	if *outputGPX == "" {
 		*outputGPX = CFG.OutputGPX
 	}
-	fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
+	//fmt.Printf("CFG now reads %v\n\n", CFG.ImageFolder)
 }
 func main() {
 
@@ -277,6 +319,16 @@ func main() {
 
 	//fmt.Printf("YAML:\n%v\n\n", CFG)
 
+	fmt.Fprint(OUTF, strings.ReplaceAll(htmlhead1, "RBook doc", CFG.Title))
+	fmt.Fprint(OUTF, css_reboot)
+	if CFG.Landscape {
+		fmt.Fprint(OUTF, css_a4landscape)
+	} else {
+		fmt.Fprint(OUTF, css_a4portrait)
+	}
+	emitTopTail(OUTF, filepath.Join(CFG.ProjectFolder, "document.css"))
+	fmt.Fprint(OUTF, htmlhead2)
+
 	for i := 0; i < len(CFG.Sections); i++ {
 
 		sf := strings.Split(CFG.Sections[i], ".")
@@ -302,6 +354,7 @@ func main() {
 		}
 
 	}
+	fmt.Fprint(OUTF, htmlfoot)
 	if GPXF != nil {
 		GPXF.WriteString("</gpx>\n")
 	}
@@ -338,8 +391,9 @@ func emitBonuses(s int, sf string, nopage bool) {
 	for rows.Next() {
 		B := newBonus()
 		askPoints := 0
+		PointsVal := 0
 
-		err := rows.Scan(&B.BonusID, &B.BriefDesc, &B.Points, &B.Flags, &B.Notes,
+		err := rows.Scan(&B.BonusID, &B.BriefDesc, &PointsVal, &B.Flags, &B.Notes,
 			&B.Cat1, &B.Cat2, &B.Cat3, &B.Cat4, &B.Cat5, &B.Cat6, &B.Cat7, &B.Cat8, &B.Cat9, &B.Image, &B.Waffle, &B.Coords,
 			&B.Question, &B.Answer, &askPoints)
 		if err != nil {
@@ -349,7 +403,12 @@ func emitBonuses(s int, sf string, nopage bool) {
 		B.StreamID = CFG.Streams[s].StreamID
 		B.HasWaffle = B.Waffle != ""
 		B.HasNotes = B.Notes != ""
-		B.AskPoints = askPoints != 0
+		B.AskPoints = askPoints == 1
+		if askPoints == 2 {
+			B.Points = "X" + strconv.Itoa(PointsVal)
+		} else {
+			B.Points = strconv.Itoa(PointsVal)
+		}
 		if GPXF != nil {
 			B.Lat, B.Lon, err = coordsparser.Parse(strings.ReplaceAll(strings.ReplaceAll(B.Coords, "°", " "), "'", " "))
 			if err != nil {
@@ -419,7 +478,7 @@ func emitBonuses(s int, sf string, nopage bool) {
 
 	}
 	OUTF.WriteString("</div>")
-	fmt.Printf("%v bonus records processed\n", NRex)
+	fmt.Printf("%v bonus records processed [%v]\n", NRex, sf)
 	rows.Close()
 
 }

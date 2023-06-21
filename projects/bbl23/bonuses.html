@@ -1,0 +1,19 @@
+
+<div class="bonus {{.StreamID}}{{if .NewLine}} Left{{else}} right{{end}}">
+    <span class="BonusID"><strong>{{.BonusID}}</strong></span> <span class="Title">{{.BriefDesc}}</span>
+    <span class="flags">
+        {{if .AlertA}}<img class="icon" src="{{.ImageFolder}}alertalert.png" alt="A">{{end}}
+        {{if .AlertF}}<img class="icon" src="{{.ImageFolder}}alertface.png" alt="F">{{end}}
+        {{if .AlertB}}<img class="icon" src="{{.ImageFolder}}alertbike.png" alt="B">{{end}}
+        {{if .AlertT}}<img class="icon" src="{{.ImageFolder}}alertreceipt.png" alt="T">{{end}}
+        {{if .AlertR}}<img class="icon" src="{{.ImageFolder}}alertrestricted.png" alt="R">{{end}}
+        {{if .AlertD}}<img class="icon" src="{{.ImageFolder}}alertdaylight.png" alt="D">{{end}}
+    </span>&nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="Points"><strong>{{.Points}}</strong></span>
+    <span class="bonusimage">
+        <img src="{{.ImageFolder}}/bonuses/{{.Image}}" alt="{{.BonusID}}">
+    </span>
+    <span class="notes {{if .HasNotes}} {{else}} hide{{end}}">{{if .AlertA}}<img class="icon" src="{{.ImageFolder}}alertalert.png" alt="A"> {{end}}{{.Notes}}</span>
+    <span class="waffle {{if .HasWaffle}} {{else}} hide{{end}}">{{.Waffle}}</span>
+</div>
+
