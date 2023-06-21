@@ -15,7 +15,7 @@ import (
 
 	"github.com/flopp/go-coordsparser"
 	_ "github.com/mattn/go-sqlite3"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const apptitle = "RBook v1.4"
@@ -25,7 +25,7 @@ I print rally books using data supplied by Rallymasters in a standard format
 
 var yml = flag.String("cfg", "", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
-var outputfile = flag.String("to", "", "Output filename. Default to YAML config")
+var outputfile = flag.String("book", "", "Output filename. Default to YAML config")
 var outputGPX = flag.String("gpx", "", "Output GPX. Default to YAML config")
 
 var DBH *sql.DB
@@ -297,10 +297,12 @@ func main() {
 	var xfile string
 
 	fmt.Printf("%v\nCopyright (c) 2023 Bob Stammers\n", apptitle)
-	xfile = filepath.Join(CFG.OutputFolder, *outputfile)
-	fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
-	OUTF, _ = os.Create(xfile)
-	defer OUTF.Close()
+	if *outputfile != "" && *outputfile != "none" {
+		xfile = filepath.Join(CFG.OutputFolder, *outputfile)
+		fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
+		OUTF, _ = os.Create(xfile)
+		defer OUTF.Close()
+	}
 
 	if *outputGPX != "" {
 		yfile := filepath.Join(CFG.OutputFolder, *outputGPX)
@@ -336,7 +338,9 @@ func main() {
 
 			xfile = filepath.Join(CFG.ProjectFolder, sf[0]+".html")
 
-			emitTopTail(OUTF, xfile)
+			if OUTF != nil {
+				emitTopTail(OUTF, xfile)
+			}
 			continue
 		}
 		for sx, v := range CFG.Streams {
@@ -356,7 +360,7 @@ func main() {
 	}
 	fmt.Fprint(OUTF, htmlfoot)
 	if GPXF != nil {
-		GPXF.WriteString("</gpx>\n")
+		completeGPX()
 	}
 
 }
@@ -383,10 +387,12 @@ func emitBonuses(s int, sf string, nopage bool) {
 	}
 	NRex := 0
 	NLines := -1
-	if nopage {
-		OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
-	} else {
-		OUTF.WriteString("\n<div class='page'>\n")
+	if OUTF != nil {
+		if nopage {
+			OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
+		} else {
+			OUTF.WriteString("\n<div class='page'>\n")
+		}
 	}
 	for rows.Next() {
 		B := newBonus()
@@ -414,17 +420,7 @@ func emitBonuses(s int, sf string, nopage bool) {
 			if err != nil {
 				fmt.Printf("%v Coords err:%v\n", B.BonusID, err)
 			} else {
-				GPXF.WriteString(fmt.Sprintf("<wpt lat=\"%v\" lon=\"%v\"><name>%v-%v</name>", B.Lat, B.Lon, xmlsafe(B.BonusID), xmlsafe(B.BriefDesc)))
-				if CFG.Title != "" {
-					GPXF.WriteString(fmt.Sprintf("<cmt>%v</cmt>", xmlsafe(CFG.Title)))
-				}
-				if CFG.LinkGPX != "" {
-					GPXF.WriteString(fmt.Sprintf(`<link href="%v%v,%v" />`, CFG.LinkGPX, B.Lat, B.Lon))
-				}
-				if CFG.SymbolGPX != "" {
-					GPXF.WriteString(fmt.Sprintf("<sym>%v</sym>", CFG.SymbolGPX))
-				}
-				GPXF.WriteString("</wpt>\n")
+				writeWaypoint(B.Lat, B.Lon, B.BonusID, B.BriefDesc)
 			}
 		}
 
@@ -439,7 +435,9 @@ func emitBonuses(s int, sf string, nopage bool) {
 				if NLines >= CFG.Streams[s].LinesPerPage {
 					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
 						B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					if OUTF != nil {
+						OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					}
 					NLines = 0
 				}
 			}
@@ -465,16 +463,20 @@ func emitBonuses(s int, sf string, nopage bool) {
 		if err != nil {
 			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 		}
-		err = t.Execute(OUTF, B)
-		if err != nil {
-			fmt.Printf("x %v\n", err)
+		if OUTF != nil {
+			err = t.Execute(OUTF, B)
+			if err != nil {
+				fmt.Printf("x %v\n", err)
+			}
 		}
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		if OUTF != nil {
+			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		}
 
 	}
 	OUTF.WriteString("</div>")
@@ -505,7 +507,9 @@ func emitCombos(s int, sf string) {
 	}
 	NRex := 0
 	NLines := -1
-	OUTF.WriteString("<div class='page'>")
+	if OUTF != nil {
+		OUTF.WriteString("<div class='page'>")
+	}
 	for rows.Next() {
 
 		B := newCombo()
@@ -525,7 +529,9 @@ func emitCombos(s int, sf string) {
 				if NLines >= CFG.Streams[s].LinesPerPage {
 					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
 						B.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					if OUTF != nil {
+						OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					}
 					NLines = 0
 				}
 			}
@@ -543,19 +549,24 @@ func emitCombos(s int, sf string) {
 		if err != nil {
 			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 		}
-		err = t.Execute(OUTF, B)
-		if err != nil {
-			fmt.Printf("x %v\n", err)
+		if OUTF != nil {
+			err = t.Execute(OUTF, B)
+			if err != nil {
+				fmt.Printf("x %v\n", err)
+			}
 		}
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		if OUTF != nil {
+			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		}
 	}
-
-	OUTF.WriteString("</div>")
+	if OUTF != nil {
+		OUTF.WriteString("</div>")
+	}
 	fmt.Printf("%v Combo records processed\n", NRex)
 	rows.Close()
 
@@ -583,10 +594,12 @@ func emitEntrants(s int, sf string, nopage bool) {
 	}
 	NRex := 0
 	NLines := -1
-	if nopage {
-		OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
-	} else {
-		OUTF.WriteString("\n<div class='page'>\n")
+	if OUTF != nil {
+		if nopage {
+			OUTF.WriteString("\n<div class='nopage'> <!-- no page -->\n")
+		} else {
+			OUTF.WriteString("\n<div class='page'>\n")
+		}
 	}
 	for rows.Next() {
 		E := newEntrant()
@@ -607,7 +620,9 @@ func emitEntrants(s int, sf string, nopage bool) {
 				if NLines >= CFG.Streams[s].LinesPerPage {
 					xx := fmt.Sprintf("Nrex=%v MPL=%v NL=%v NLines=%v LPP=%v", NRex, CFG.Streams[s].MaxPerLine,
 						E.NewLine, NLines, CFG.Streams[s].LinesPerPage)
-					OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					if OUTF != nil {
+						OUTF.WriteString("</div><!-- autopage -->\n<div class='page'><!-- " + xx + " -->\n")
+					}
 					NLines = 0
 				}
 			}
@@ -631,19 +646,25 @@ func emitEntrants(s int, sf string, nopage bool) {
 		if err != nil {
 			fmt.Printf("Parsing error (%v) in %v\n", err, xfile)
 		}
-		err = t.Execute(OUTF, E)
-		if err != nil {
-			fmt.Printf("x %v\n", err)
+		if OUTF != nil {
+			err = t.Execute(OUTF, E)
+			if err != nil {
+				fmt.Printf("x %v\n", err)
+			}
 		}
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-		OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		if OUTF != nil {
+			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
+			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+		}
 
 	}
-	OUTF.WriteString("</div>")
+	if OUTF != nil {
+		OUTF.WriteString("</div>")
+	}
 	fmt.Printf("%v entrant records processed\n", NRex)
 	rows.Close()
 
