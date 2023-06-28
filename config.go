@@ -79,20 +79,22 @@ type BonusStream struct {
 }
 
 var CFG struct {
-	Title         string        `yaml:"title"`
-	Description   string        `yaml:"description"`
-	ProjectFolder string        `yaml:"projectFolder"`
-	OutputFolder  string        `yaml:"outputFolder"`
-	OutputFile    string        `yaml:"rallybookFile"`
-	GPX           GPXParams     `yaml:"generateGPX"`
-	Database      string        `yaml:"database"`
-	ImageFolder   string        `yaml:"imageFolder"`
-	Sections      []string      `yaml:"sections"`
-	Streams       []BonusStream `yaml:"streams"`
-	Landscape     bool          `yaml:"landscape"`
-	BonusSQL      string        `yaml:"bonusSQL"`
-	ComboSQL      string        `yaml:"comboSQL"`
-	EntrantSQL    string        `yaml:"entrantSQL"`
+	Title               string        `yaml:"title"`
+	Description         string        `yaml:"description"`
+	ProjectFolder       string        `yaml:"projectFolder"`
+	OutputFolder        string        `yaml:"outputFolder"`
+	OutputFile          string        `yaml:"rallybookFile"`
+	GPX                 GPXParams     `yaml:"generateGPX"`
+	Database            string        `yaml:"database"`
+	ImageFolder         string        `yaml:"imageFolder"`
+	Sections            []string      `yaml:"sections"`
+	Streams             []BonusStream `yaml:"streams"`
+	Landscape           bool          `yaml:"landscape"`
+	BonusSQL            string        `yaml:"bonusSQL"`
+	ComboSQL            string        `yaml:"comboSQL"`
+	EntrantSQL          string        `yaml:"entrantSQL"`
+	AskPointsVarPrefix  string        `yaml:"askPointsVariablePrefix"`
+	AskPointsMultPrefix string        `yaml:"askPointsMultiplierPrefix"`
 }
 
 type Bonus struct {

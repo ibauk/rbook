@@ -8,21 +8,24 @@ description: 12 days European Tour 2023
 
 
 # Standard filepath specification, relative to CWD
-projectfolder: projects\12days
-outputfolder: \sm-installs\12days
-outputfile: 12daysRallybook.html
-outputgpx: 12days.gpx
+projectFolder: projects\12days
+outputFolder: \sm-installs\12days
+outputFile: 12daysRallybook.html
+
 database: \sm-installs\12days\sm\RealData.db
 
 # URL format, relative to output folder
-imagefolder: sm/images/
+imageFolder: sm/images/
 
 # default is portrait
 landscape: false
 
-symbolgpx: "Circle, Green"
+generateGPX:
+  symbol: "Circle, Green"
 
-linkgpx: https://www.google.ch/maps/search/
+  link2map: https://www.google.ch/maps/search/
+
+  outputFile: 12days.gpx
 
 # Each entry in sections is the name of a static template with limited
 # configuration variables. Entries starting with 'stream.' refer to
@@ -52,7 +55,7 @@ streams:
     }
 
 
-bonussql: "SELECT BonusCode || '-' || CodeSuffix || '-' || BType As BonusID,BriefDesc,Points 
+bonusSQL: "SELECT BonusCode || '-' || CodeSuffix || '-' || BType As BonusID,BriefDesc,Points 
 ,'','',0,0,0,0,0,0,0,0,0,'','',Coords,'','',0
  FROM RealBonuses"
 

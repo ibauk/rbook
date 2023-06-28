@@ -10,17 +10,17 @@ The title of the rally, used as the title of the output document
 ## description
 Additional description of the edition
 
-## projectfolder
+## projectFolder
 The filepath to the folder containing templates for this project
 
-## outputfolder
+## outputFolder
 The filepath to the folder that will hold the output file
 
 ## database
 The filepath to the ScoreMaster database used with this project
 
 
-## imagefolder
+## imageFolder
 URL, relative to outputfolder, to folder containing images. This would normally point to the **sm/images** folder of a ScoreMaster installation with bonus images held in **sm/images/bonuses**. A typical bonus image inclusion in a template might be `{{.ImageFolder}}/bonuses/01.png`
 
 
@@ -49,7 +49,19 @@ The SQL string to follow the ORDER BY in the SELECT string for bonuses or combos
 ### maxperline
 The number of bonuses or combos to be output to a single line across the page.
 
+### generateGPX
+#### outputFile
+The path of the output rally book file relative to the *outputFolder*. Can be overridden with *-gpx*  option.
 
+#### link2map
+The url of a mapping service. The link will have latitude and longitude appended automatically. 
+eg: https://www.google.co.uk/maps/search/
+
+#### symbol
+The quoted name of a recognised symbol to be used. eg: "Circle, Green"
+
+#### bonusidOnly
+If false, the waypoint name will be *bonusid* - *briefdesc*
 ---
 
 ## Sample config 
@@ -62,14 +74,14 @@ The number of bonuses or combos to be output to a single line across the page.
 
     description: A4 portrait, 2 column photos
 
-    projectfolder: projects\sample\
+    projectFolder: projects\sample\
 
-    outputfolder: \sm-installs\testmodel
+    outputFolder: \sm-installs\testmodel
 
     database: \sm-installs\testmodel\sm\scoremaster.db
 
 
-    imagefolder: sm/images/
+    imageFolder: sm/images/
 
 
     landscape: false
@@ -86,6 +98,10 @@ The number of bonuses or combos to be output to a single line across the page.
             bonusorder:   BonusID,
             maxperline:   2
           }
+
+    generateGPX:
+        outputFile: it22.gpx
+        symbol: "Circle, Green"
 
 
 

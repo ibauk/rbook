@@ -78,7 +78,7 @@ td.bottom {
 }
 
 strong {
-        text-transform: uppercase;
+        /*text-transform: uppercase;*/
         font-size: larger;
 }
 

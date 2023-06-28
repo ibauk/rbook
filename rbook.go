@@ -20,6 +20,10 @@ const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
 
+// ScoreMaster AskPoints values
+const smAskPointsVar = 1
+const smAskPointsMult = 2
+
 var yml = flag.String("cfg", "", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
 var outputfile = flag.String("book", "", "Output filename. Default to YAML config")
@@ -177,9 +181,11 @@ func emitBonuses(s int, sf string, nopage bool) {
 		B.StreamID = CFG.Streams[s].StreamID
 		B.HasWaffle = B.Waffle != ""
 		B.HasNotes = B.Notes != ""
-		B.AskPoints = askPoints == 1
-		if askPoints == 2 {
-			B.Points = "X" + strconv.Itoa(PointsVal)
+		B.AskPoints = askPoints == smAskPointsVar
+		if askPoints == smAskPointsVar {
+			B.Points = CFG.AskPointsVarPrefix + strconv.Itoa(PointsVal)
+		} else if askPoints == smAskPointsMult {
+			B.Points = CFG.AskPointsMultPrefix + strconv.Itoa(PointsVal)
 		} else {
 			B.Points = strconv.Itoa(PointsVal)
 		}

@@ -22,6 +22,8 @@ imageFolder: sm/images/
 # default is portrait
 landscape: false
 
+askPointsVariablePrefix: ''
+askPointsMultiplierPrefix: 'x'
 
 # Each entry in sections is the name of a static template with limited
 # configuration variables. Entries starting with 'stream.' refer to
