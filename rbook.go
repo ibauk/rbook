@@ -28,6 +28,7 @@ var yml = flag.String("cfg", "", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
 var outputfile = flag.String("book", "", "Output filename. Default to YAML config")
 var outputGPX = flag.String("gpx", "", "Output GPX. Default to YAML config")
+var verbose = flag.Bool("v", false, "verbose mode")
 
 var DBH *sql.DB
 var OUTF *os.File
@@ -111,12 +112,19 @@ func main() {
 			xfile = filepath.Join(CFG.ProjectFolder, sf[0]+".html")
 
 			if OUTF != nil {
+				if *verbose {
+					fmt.Printf("Emitting %v\n", sf[0])
+				}
 				emitTopTail(OUTF, xfile)
 			}
 			continue
 		}
 		for sx, v := range CFG.Streams {
 			if v.StreamID == sf[1] {
+				if *verbose {
+					fmt.Printf("Streaming %v\n", sf[1])
+				}
+				fmt.Fprint(OUTF, `<div class="stream`+sf[1]+`">`)
 				if v.Type == type_combo {
 					//fmt.Printf("Calling combos %v\n", v.StreamID)
 					emitCombos(sx, sf[1])
@@ -126,6 +134,7 @@ func main() {
 					//fmt.Printf("Calling bonuses %v\n", v.StreamID)
 					emitBonuses(sx, sf[1], v.NoPageTop)
 				}
+				fmt.Fprint(OUTF, `</div>`)
 			}
 		}
 
