@@ -15,7 +15,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const apptitle = "RBook v1.4"
+const apptitle = "RBook v1.6"
 const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
@@ -64,7 +64,7 @@ func main() {
 
 	var xfile string
 
-	fmt.Printf("%v\nCopyright (c) 2023 Bob Stammers\n", apptitle)
+	fmt.Printf("%v\nCopyright (c) 2024 Bob Stammers\n", apptitle)
 
 	fmt.Printf("Project folder is %v\n", CFG.ProjectFolder)
 
@@ -132,7 +132,7 @@ func main() {
 					emitEntrants(sx, sf[1], v.NoPageTop)
 				} else {
 					//fmt.Printf("Calling bonuses %v\n", v.StreamID)
-					emitBonuses(sx, sf[1], v.NoPageTop)
+					emitBonuses(sx, sf[1], v.NoPageTop, v.EmitGPX)
 				}
 				fmt.Fprint(OUTF, `</div>`)
 			}
@@ -146,7 +146,7 @@ func main() {
 
 }
 
-func emitBonuses(s int, sf string, nopage bool) {
+func emitBonuses(s int, sf string, nopage bool, emitGPX bool) {
 
 	var sql string
 	if CFG.BonusSQL != "" {
@@ -198,12 +198,12 @@ func emitBonuses(s int, sf string, nopage bool) {
 		} else {
 			B.Points = strconv.Itoa(PointsVal)
 		}
-		if GPXF != nil {
+		if GPXF != nil && emitGPX {
 			B.Lat, B.Lon, err = coordsparser.Parse(strings.ReplaceAll(strings.ReplaceAll(B.Coords, "°", " "), "'", " "))
 			if err != nil {
 				fmt.Printf("%v Coords err:%v\n", B.BonusID, err)
 			} else {
-				writeWaypoint(B.Lat, B.Lon, B.BonusID, B.BriefDesc)
+				writeWaypoint(B.Lat, B.Lon, B.BonusID, B.BriefDesc, PointsVal)
 			}
 		}
 

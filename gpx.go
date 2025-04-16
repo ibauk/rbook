@@ -30,7 +30,7 @@ func xmlsafe(s string) string {
 	return res
 }
 
-func writeWaypoint(lat, lon float64, bonusid, briefdesc string) {
+func writeWaypoint(lat, lon float64, bonusid, briefdesc string, pointsval int) {
 
 	wpt := fmt.Sprintf("<wpt lat=\"%v\" lon=\"%v\"><name>%v", lat, lon, xmlsafe(bonusid))
 	if !CFG.GPX.CodeOnlyGPX {
@@ -44,6 +44,7 @@ func writeWaypoint(lat, lon float64, bonusid, briefdesc string) {
 	if CFG.GPX.LinkGPX != "" {
 		GPXF.WriteString(fmt.Sprintf(`<link href="%v%v,%v" />`, CFG.GPX.LinkGPX, lat, lon))
 	}
+	GPXF.WriteString(fmt.Sprintf("<desc>%v</desc>", pointsval))
 	if CFG.GPX.SymbolGPX != "" {
 		GPXF.WriteString(fmt.Sprintf("<sym>%v</sym>", CFG.GPX.SymbolGPX))
 	}

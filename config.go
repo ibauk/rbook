@@ -76,6 +76,7 @@ type BonusStream struct {
 	BrPerLine    int    `yaml:"brperline"`
 	TemplateID   string `yaml:"template"`
 	NoPageTop    bool   `yaml:"nopagetop"`
+	EmitGPX      bool   `yaml:"emitgpx"`
 }
 
 var CFG struct {

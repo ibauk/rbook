@@ -1,0 +1,49 @@
+# j23.yml
+#
+
+
+title: Jamboree 2023
+description: A4 portrait, 2 column photos
+
+
+# Standard filepath specification, relative to CWD
+projectfolder: \projects\rbook\projects\j23
+outputfolder: \sm-installs\jamboree23
+outputfile: Jamboree23Rallybook.html
+database: \sm-installs\jamboree23\sm\ScoreMaster.db
+
+# URL format, relative to output folder
+imagefolder: sm/images/
+
+# default is portrait
+landscape: false
+
+
+# Each entry in sections is the name of a static template with limited
+# configuration variables. Entries starting with 'stream.' refer to
+# streams which process either bonuses or combos. Streams are defined
+# below.
+sections: [ header,  stream.bonuses ]
+
+# StreamID is the name of the template file.
+streams:
+  - { 
+      streamid:     bonuses, 
+      type:         bonus,
+      wherestring:  ,
+      bonusorder:   'BonusID',
+      maxperline:   2,
+      linesperpage: 3,
+      brperline: 23
+    }
+  - { 
+      streamid:     coordslist,
+      type:       bonus,
+      wherestring:  , 
+      bonusorder: BonusID ,
+      maxperline: 1,
+      linesperpage: 44,
+      brperline: 2
+    }
+
+

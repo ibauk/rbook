@@ -1,21 +1,21 @@
-# bbr22.yml
+# bbrtech.yml
 #
 
 
-title: 2022 Brit Butt Rally
+title: 2023 Brit Butt Rally
 
 description: A4 portrait, 1 column photos
 
 
 # Standard filepath specification, relative to CWD
-projectfolder: \projects\rbook\projects\bbr22
-outputfolder: \sm-installs\bbr22
-outputfile: BBR22TechChecks.html
+projectFolder: \projects\rbook\projects\bbr23
+outputFolder: \sm-installs\bbr23
+rallybookFile: BBR23TechChecks.html
 outputgpx:
-database: \sm-installs\bbr22\sm\ScoreMaster.db
+database: \sm-installs\bbr23\sm\ScoreMaster.db
 
 # URL format, relative to output folder
-imagefolder: sm/images/
+imageFolder: sm/images/
 
 # default is portrait
 landscape: false

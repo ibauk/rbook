@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="dox/reboot.css">
+        {{if .Landscape}}
+        <link rel="stylesheet" type="text/css" href="dox/a4landscape.css">
+        {{else}}
+        <link rel="stylesheet" type="text/css" href="dox/a4portrait.css">
+        {{end}}
+        <title>{{.Title}}</title>
+        <style>
+                body {
+                        font-family: Verdana, Geneva, Tahoma, sans-serif;
+                        width: 297mm;
+                        font-size: 18pt;
+                }
+
+                h1 {
+                        text-align: center;
+                        margin-bottom: .1em;
+                        margin-top: 0;
+                        font-size: 40pt;
+                        color: black;
+                        font-weight: bold;
+                }
+
+                h2 {
+                        text-align: center;
+                        padding: 2em 0 1em 0;
+                        font-size: 30pt;
+
+                }
+
+                h3 {
+                        text-align: center;
+                        padding: 2em 0 1em 0;
+                        font-size: larger;
+
+                }
+
+                h4 {
+                        text-align: center;
+                        color: blue;
+                        font-size: 30pt;
+                        margin-top: 0;
+                }
+
+                h6 {
+                        text-align: left;
+                        margin-bottom: 0;
+                        margin-top: 1em;
+                        padding-bottom: 0;
+                        font-size: 12pt;
+                        text-decoration: underline;
+                }
+
+                p {
+                        margin-top: 6pt;
+                }
+
+                li {
+                        margin-bottom: 1em;
+                }
+
+                .label {
+                        text-align: center;
+                        width: 10em;
+                }
+
+                .line   {
+                        margin-bottom: 1em;
+
+                }
+                .line strong {
+                        font-size: larger;
+                        vertical-align: middle;
+                }
+                .EntrantID,
+                .RiderName,
+                .PillionName,
+                .Bike, .BikeReg      {
+                        font-size: larger;
+                        padding-left: 2em;
+                        font-weight: bold;
+                }
+                .box            {
+                        font-size: 22pt;
+                }
+                .odobox         {
+                        border: solid 6px;
+                        padding-bottom: 0;
+                        padding-top: 1em;
+                        font-size: 28pt;
+                }
+                .col3           {
+                        display: inline-block;
+                        width: 12em;
+                        margin-bottom: 1.5em;
+                        text-align: right;
+                        vertical-align: text-bottom;
+                }
+                .col2           {
+                        display: inline-block;
+                        width: 18em;
+                        margin-bottom: 1.5em;
+                        text-align: right;
+                        vertical-align: text-bottom;
+                }
+                .col1           {
+                        display: inline-block;
+                        width: 50em;
+                        margin-bottom: 1.5em;
+                        text-align: center;
+                        vertical-align: text-bottom;
+                }
+                .vlabel {
+                        vertical-align: middle;
+                        width: 16em;
+                        text-align: right;
+                        display: inline-block;
+                }
+
+                .tall {
+                        height: 8em;
+                }
+
+                .box {
+                        border: solid 6px;
+                }
+
+                .left   { float: left; }
+                .right  { float: right; }
+
+                .left,
+                .right  {
+                        -box-sizing: border-box; 
+                        width: 470pt;
+                }
+
+                .signboxes {
+                        border-spacing: 1em;
+                }
+
+                .legend     { list-style-type: none; padding: 1em;  }
+                
+                
+                .short      { width: 140pt; }
+ 
+                
+                .pagebreak      { page-break-after: always; background-color: blue; }
+
+                .tenpct     { background: lightgray; }
+                .example    { border: dotted; padding: 15px; margin-left: auto; margin-right: auto; }
+                .icon       { width: 64px; vertical-align: middle; padding: 3px; }
+                .icon.big   { width: 64px; height: 64px; vertical-align: sub; }
+                .flags      {
+                        display: inline-block;
+                        width: 100%;
+                        height: 80px;
+                        border-bottom: solid 8px;
+                }
+
+                .email      { color: blue; text-decoration: none; font-weight: bold; }
+
+                .label      { font-weight: normal; }
+
+                .coords         { 
+                        display: inline-block; 
+                        width: 100%; 
+                        text-align: center;
+                        font-size: 1.3em;
+                        border-top: none;
+                        border-bottom: solid 8px;
+                        height: 2.5em;
+                        padding: .3em;
+                        margin-top: 0;
+                }
+                .waffle         { 
+                        display: inline-block; 
+                        width: 96%; 
+                        font-size: 1.1em;
+                        border-top: none;
+                        border-right: solid 8px;
+                        border-left: solid 8px;
+                        border-bottom: solid 8px;
+                        height: 2.5em;
+                        padding: .26em;
+                        margin-top: 0;
+                        text-align: center;
+                        vertical-align: middle;
+                }
+                .Notes          {
+                        display: inline-block;
+                        width: 100%;
+                        height: 2.5em;
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        padding: .5em;
+                        text-align: center;
+                        vertical-align: middle;
+                }
+                .Title           {
+                        border-top: solid 8px;
+                        border-bottom: solid 8px;
+                        display: inline-block;
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        text-align: center;
+                        padding-top: .5em;
+                        padding-bottom: .5em;
+                        width: 100%;
+                }
+                .hide {
+                        border: none;
+                        background-color: white;
+                        color: white;
+                }
+
+                tr.question     { display:inline-block;  padding-bottom: .5em; }
+                td.nowrap       { display: table-cell; width: 140pt; }
+
+
+
+
+                .pages       {
+                        padding-left: 30pt;
+                }
+
+                .header       {
+                        font-size: 48pt;
+                        margin-bottom: 1em;
+                }
+                .header img   {
+                        vertical-align: middle;
+                }
+                p    {
+                                text-align: justify;
+                }
+
+                .intro  { 
+                                
+                                width: 240mm;
+                                text-align: justify;
+                                font-size: 16pt;
+                                margin-left: auto;
+                                margin-right: auto;
+                        }
+                .intro p {
+                        font-size: 24pt;
+                        margin-bottom: 1em;
+                }
+
+                .intro img.center {
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
+                }
+
+   .page {
+        display: block;
+        height: 280mm;
+     counter-increment: page;
+     page-break-after: always;
+    }
+
+   /*page numbers*/
+    .nopage {
+        display: block;
+        counter-increment: page;
+    }
+
+        </style>
+
+</head>
+
+<body>
+<div class="pages">

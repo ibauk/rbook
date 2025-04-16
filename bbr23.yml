@@ -1,11 +1,9 @@
 # bbr22.yml
 #
 
-
 title: 2023 Brit Butt Rally
 
 description: A4 portrait, 1 column photos
-
 
 # Standard filepath specification, relative to CWD
 projectFolder: \projects\rbook\projects\bbr23
@@ -19,66 +17,75 @@ imageFolder: sm/images/
 # default is portrait
 landscape: false
 
-
 # Each entry in sections is the name of a static template with limited
 # configuration variables. Entries starting with 'stream.' refer to
 # streams which process either bonuses or combos. Streams are defined
 # below.
-sections: [  frontpage, introletter, bonusclaiming, 
-      stream.bonuses, rbheader, stream.rbonuses, 
-      comboheader, stream.combos, 
-      coordhdr, stream.coordslist, coordftr, 
-      map, rules ]
+sections:
+  [
+    frontpage,
+    introletter,
+    bonusclaiming,
+    stream.bonuses,
+    rbheader,
+    stream.rbonuses,
+    comboheader,
+    stream.combos,
+    coordhdr,
+    stream.coordslist,
+    coordftr,
+    map,
+    rules,
+  ]
 
 # StreamID is the name of the template file.
 streams:
-  - { 
-      streamid:     bonuses, 
-      type:         bonus,
-      wherestring:  GroupName is null OR GroupName='' OR GroupName='RM',
-      bonusorder:   GroupName,BonusID,
-      maxperline:   1,
+  - {
+      streamid: bonuses,
+      type: bonus,
+      wherestring: GroupName is null OR GroupName='' OR GroupName='RM',
+      bonusorder: GroupName,
+      BonusID,
+      maxperline: 1,
       linesperpage: 3,
-      brperline: 22
+      brperline: 22,
     }
-  - { 
-      streamid:     rbstart, 
-      template:     bonuses,
-      type:         bonus,
-      wherestring:  GroupName='RBStart',
-      bonusorder:   BonusID,
-      maxperline:   1,
+  - {
+      streamid: rbstart,
+      template: bonuses,
+      type: bonus,
+      wherestring: GroupName='RBStart',
+      bonusorder: BonusID,
+      maxperline: 1,
       linesperpage: 1,
       brperline: 0,
-      nopagetop:    true
+      nopagetop: true,
     }
-  - { 
-      streamid:     rbonuses, 
-      template:     bonuses,
-      type:         bonus,
-      wherestring:  GroupName='RBClaims' OR GroupName='RBStart',
-      bonusorder:   BonusID,
-      maxperline:   1,
+  - {
+      streamid: rbonuses,
+      template: bonuses,
+      type: bonus,
+      wherestring: GroupName='RBClaims' OR GroupName='RBStart',
+      bonusorder: BonusID,
+      maxperline: 1,
       linesperpage: 3,
-      brperline: 22
+      brperline: 22,
     }
-  - { 
-      streamid:     combos,
-      type:       combo,
-      wherestring:  , 
-      bonusorder: ComboID ,
+  - {
+      streamid: combos,
+      type: combo,
+      wherestring,
+      bonusorder: ComboID,
       maxperline: 1,
       linesperpage: 6,
-      brperline: 5
+      brperline: 5,
     }
-  - { 
-      streamid:     coordslist,
-      type:       bonus,
-      wherestring:  coords<>'', 
-      bonusorder: BonusID ,
+  - {
+      streamid: coordslist,
+      type: bonus,
+      wherestring: coords<>'',
+      bonusorder: BonusID,
       maxperline: 2,
       linesperpage: 24,
-      brperline: 4
+      brperline: 4,
     }
-
-
