@@ -1,0 +1,56 @@
+# sas23gpx.yml
+#
+# I produce a GPX from the ScoreMaster database
+
+
+title: 2025 ParkRideCoddiwomple
+
+description: Standard GPX file
+
+
+# Standard filepath specifications, relative to CWD
+
+# where my templates are stored
+projectFolder: /home/bob/Documents/projects/rbook/projects/sas23gpx
+
+# where I'll store my outputs
+outputFolder: /home/bob/Documents/sm-installs/bbr25
+
+# the name of the rally book document or 'none' if no
+# book to be generated
+rallybookFile: none
+
+# where to get details of bonuses, etc
+database: /home/bob/Documents/sm-installs/bbr25/sm/ScoreMaster.db
+
+# URL format, relative to output folder
+imageFolder: sm/images/
+
+# default is portrait
+landscape: false
+
+
+# Each entry in sections is the name of a static template with limited
+# configuration variables. Entries starting with 'stream.' refer to
+# streams which process either bonuses or combos. Streams are defined
+# below.
+sections: [  stream.bonuses ]
+
+# StreamID is the name of the template file.
+streams:
+  - { 
+      streamid:     bonuses, 
+      type:         bonus,
+      #wherestring:
+      bonusorder:   BonusID,
+      emitgpx: true
+      #maxperline:
+      #linesperpage:
+      #brperline:
+      #template:      # if not streamid
+      #nopagetop:
+    }
+
+generateGPX:
+  outputFile: prc25.gpx
+  link2map: https://www.google.co.uk/maps/search/

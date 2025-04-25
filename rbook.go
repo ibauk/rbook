@@ -15,7 +15,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const apptitle = "RBook v1.6"
+const apptitle = "RBook v1.7"
 const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
@@ -64,7 +64,7 @@ func main() {
 
 	var xfile string
 
-	fmt.Printf("%v\nCopyright (c) 2024 Bob Stammers\n", apptitle)
+	fmt.Printf("%v\nCopyright (c) 2025 Bob Stammers\n", apptitle)
 
 	fmt.Printf("Project folder is %v\n", CFG.ProjectFolder)
 
@@ -82,11 +82,13 @@ func main() {
 	if *outputGPX != "" {
 		yfile := filepath.Join(CFG.OutputFolder, *outputGPX)
 		fmt.Printf("Generating GPX %v\n", yfile)
+		fmt.Print("Bonuses in config streams including 'emitgpx: true' are emitted to GPX\n")
 		GPXF, _ = os.Create(yfile)
 		defer GPXF.Close()
 		GPXF.WriteString(gpxheader)
 	}
 
+	fmt.Println()
 	var err error
 	DBH, err = sql.Open("sqlite3", CFG.Database)
 	if err != nil {
@@ -167,6 +169,7 @@ func emitBonuses(s int, sf string, nopage bool, emitGPX bool) {
 		return
 	}
 	NRex := 0
+	NGpx := 0
 	NLines := -1
 	if OUTF != nil {
 		if nopage {
@@ -199,11 +202,12 @@ func emitBonuses(s int, sf string, nopage bool, emitGPX bool) {
 			B.Points = strconv.Itoa(PointsVal)
 		}
 		if GPXF != nil && emitGPX {
-			B.Lat, B.Lon, err = coordsparser.Parse(strings.ReplaceAll(strings.ReplaceAll(B.Coords, "°", " "), "'", " "))
+			B.Lat, B.Lon, err = coordsparser.Parse(cleanCoords(B.Coords))
 			if err != nil {
 				fmt.Printf("%v Coords err:%v\n", B.BonusID, err)
 			} else {
 				writeWaypoint(B.Lat, B.Lon, B.BonusID, B.BriefDesc, PointsVal)
+				NGpx++
 			}
 		}
 
@@ -263,7 +267,10 @@ func emitBonuses(s int, sf string, nopage bool, emitGPX bool) {
 
 	}
 	OUTF.WriteString("</div>")
-	fmt.Printf("%v bonus records processed [%v]\n", NRex, sf)
+	fmt.Printf("\n%v bonus records processed [%v]\n", NRex, sf)
+	if *outputGPX != "" {
+		fmt.Printf("%v bonuses included in GPX\n", NGpx)
+	}
 	rows.Close()
 
 }

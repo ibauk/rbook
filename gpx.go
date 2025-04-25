@@ -57,3 +57,9 @@ func completeGPX() {
 	GPXF.WriteString("</gpx>\n")
 
 }
+
+func cleanCoords(coords string) string {
+
+	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(coords, "°", " "), "'", " "), "’", "")
+
+}

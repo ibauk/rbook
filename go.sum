@@ -1,7 +1,7 @@
-github.com/flopp/go-coordsparser v0.0.0-20201115094714-8baaeb7062d5 h1:o5yuyiGtJ4c9ECOq12K6EqsQNnsGF6I+WqBZynB2Hlw=
-github.com/flopp/go-coordsparser v0.0.0-20201115094714-8baaeb7062d5/go.mod h1:t5EAdR9sDhKR06Ix2ZS/8jt8INpzeV3P5uVyEkCDYJc=
-github.com/mattn/go-sqlite3 v1.14.12 h1:TJ1bhYJPV44phC+IMu1u2K/i5RriLTPe+yc68XDJ1Z0=
-github.com/mattn/go-sqlite3 v1.14.12/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
+github.com/flopp/go-coordsparser v0.0.0-20250311184423-61a7ff62d17c h1:HNRXT/BVRhDaHuFjFQ81mHd+DAmkRJXIELEL05LCDpk=
+github.com/flopp/go-coordsparser v0.0.0-20250311184423-61a7ff62d17c/go.mod h1:7y/2PxXfR1mGtIQFNtFE1daHIka2e8J480Bsm+MiCpk=
+github.com/mattn/go-sqlite3 v1.14.28 h1:ThEiQrnbtumT+QMknw63Befp/ce/nUPgBPMlRFEum7A=
+github.com/mattn/go-sqlite3 v1.14.28/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
