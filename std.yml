@@ -1,0 +1,64 @@
+# std.yml
+#
+
+title: 2025 Brit Butt Light # overridden by RallyTitle from database
+
+# describe this template
+description: A4 portrait, 2 column photos
+
+# Standard filepath specification, relative to CWD
+projectFolder: projects/std
+outputFolder: /home/bob/Documents/sm-installs/raf
+rallybookFile: DummyRallybook.html
+database: /home/bob/Documents/sm-installs/bbl25/sm/ScoreMaster.db
+
+generateGPX:
+  outputFile: Dummy.gpx
+
+# URL format, relative to output folder
+imageFolder: sm/images/
+
+# default is portrait
+landscape: false
+
+askPointsVariablePrefix: ""
+askPointsMultiplierPrefix: "x"
+
+# Each entry in sections is the name of a static template with limited
+# configuration variables. Entries starting with 'stream.' refer to
+# streams which process either bonuses or combos. Streams are defined
+# below.
+sections:
+  [
+    frontpage,
+    introletter,
+    comboheader,
+    stream.combos,
+    comboftr,
+    stream.bonuses,
+    coordhdr,
+    stream.coordslist,
+    coordftr,
+    rules,
+  ]
+
+# StreamID is the name of the template file.
+streams:
+  - { streamid: combos, type: combo }
+  - {
+      streamid: bonuses,
+      type: bonus,
+      whereSQL,
+      orderByField: "BriefDesc",
+      colsPerRow: 2,
+      rowsPerPage: 3,
+      emitGPX: true,
+    }
+  - {
+      streamid: coordslist,
+      type: bonus,
+      whereSQL,
+      orderByField: BonusID,
+      colsPerRow: 2,
+      rowsPerPage: 44,
+    }

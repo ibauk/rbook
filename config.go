@@ -216,7 +216,7 @@ func loadConfig() {
 		}
 	}
 
-	fmt.Printf("Loading config %v\n", configPath)
+	fmt.Printf("Loading config %v   Use -cfg to override\n", configPath)
 	file, err := os.Open(configPath)
 	if err != nil {
 		panic(err)

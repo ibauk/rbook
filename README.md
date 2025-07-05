@@ -1,31 +1,34 @@
 # rbook - A Rally Book generator
 
-I prepare rally books for IBA rallies using data held in a [ScoreMaster](https://github.com/ibauk/sm3) database and templates coded in HTML & CSS and images stored on disk. My output is a single HTML document ready for printing to PDF format.
+I prepare rally books and, optionally, GPX files for IBA rallies using data held in a [ScoreMaster](https://github.com/ibauk/sm3) database and templates coded in HTML & CSS and images stored on disk. My output is a single HTML document ready for printing to PDF format.
 
-Each run is controlled by a standard YAML configuration file. The parameters are:-
+Each run is controlled by a standard YAML configuration file identified by the *-cfg* commandline variable, default "std.yml". The parameters are:-
 
 ## title
-The title of the rally, used as the title of the output document
+The title of the rally, used as the title of the output document. This is overwritten using the RallyTitle field from the ScoreMaster database.
 
 ## description
-Additional description of the edition
+Additional description of the edition. Perhaps "A4 portrait, 2 column photos"
 
 ## projectFolder
-The filepath to the folder containing templates for this project
+The filepath to the folder containing templates for this project.
 
 ## outputFolder
-The filepath to the folder that will hold the output file
+The filepath to the folder that will hold the output files.
+
+## rallybookFile
+The name of the file containing the generated HTML. This can be overriden using the *-book* commandline variable.
 
 ## database
-The filepath to the ScoreMaster database used with this project
+The filepath to the ScoreMaster database used with this project. This can be overriden using the *-db* commandline variable.
 
 
 ## imageFolder
-URL, relative to outputfolder, to folder containing images. This would normally point to the **sm/images** folder of a ScoreMaster installation with bonus images held in **sm/images/bonuses**. A typical bonus image inclusion in a template might be `{{.ImageFolder}}/bonuses/01.png`
+URL, relative to outputfolder, to folder containing images. This would normally point to the **sm/images** folder of a ScoreMaster installation with bonus images held in **sm/images/bonuses**. A typical bonus image inclusion in a template might be `{{.ImageFolder}}/bonuses/01.png`.
 
 
 ## landscape
-true/false. The default is false, portrait mode
+true/false. The default is false, portrait mode. This chooses between CSS files.
 
 
 ## sections
@@ -40,18 +43,24 @@ The *template* name of this stream. The name included as *stream.streamid* above
 ### type
 What type of template this is. One of `static`, `bonus`, or `combo`.
 
-### wherestring
+### whereSQL
 The SQL string to follow the WHERE in the SELECT string for bonuses or combos.
 
-### bonusorder
+### orderByField
 The SQL string to follow the ORDER BY in the SELECT string for bonuses or combos.
 
-### maxperline
+### colsPerRow
 The number of bonuses or combos to be output to a single line across the page.
+
+### rowsPerPage
+The number of rows to be output per printed page.
+
+### emitGPX
+true or false - rows from this stream should be included in any GPX file.
 
 ### generateGPX
 #### outputFile
-The path of the output rally book file relative to the *outputFolder*. Can be overridden with *-gpx*  option.
+The path of the output GPX file relative to the *outputFolder*. Can be overridden with *-gpx*  option. If left blank, no GPX file is created.
 
 #### link2map
 The url of a mapping service. The link will have latitude and longitude appended automatically. 
@@ -94,9 +103,11 @@ If false, the waypoint name will be *bonusid* - *briefdesc*
         - { 
             streamid:     bonuses, 
             type:         bonus,
-            wherestring:  BonusID NOT LIKE '%-' AND BonusID <='14',
-            bonusorder:   BonusID,
-            maxperline:   2
+            whereSQL:     BonusID NOT LIKE '%-' AND BonusID <='14',
+            orderByField: BonusID,
+            colsPerRow:   2
+            rowsPerPage:  3
+            emitGPX:      true
           }
 
     generateGPX:

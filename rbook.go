@@ -85,7 +85,7 @@ func main() {
 
 	var xfile string
 
-	fmt.Printf("%v\nCopyright (c) 2025 Bob Stammers\n", apptitle)
+	fmt.Printf("%v   Copyright (c) 2025 Bob Stammers\n", apptitle)
 
 	fmt.Printf("Project folder is %v\n", CFG.ProjectFolder)
 
@@ -342,7 +342,7 @@ func emitCombos(s int, sf string) {
 
 		if B.MinimumTicks > 0 {
 			expandComboPoints(B)
-			fmt.Printf("%v %v %v\n", B.ComboID, B.MinimumTicks, B.ScorePoints)
+			//fmt.Printf("%v %v %v\n", B.ComboID, B.MinimumTicks, B.ScorePoints)
 		}
 		B.StreamID = CFG.Streams[s].StreamID
 
@@ -386,7 +386,7 @@ func emitCombos(s int, sf string) {
 	if OUTF != nil {
 		OUTF.WriteString("</div>")
 	}
-	fmt.Printf("%v Combo records processed\n", NRex)
+	fmt.Printf("%v Combo records processed [%v]\n", NRex, sf)
 	rows.Close()
 
 }
@@ -509,7 +509,7 @@ func expandComboPoints(B *Combo) {
 	sp := strings.Split(B.ScorePoints, ",")
 	x := ""
 	for n := B.MinimumTicks; n <= len(bl); n++ {
-		fmt.Printf("%v now\n", n)
+		//fmt.Printf("%v now\n", n)
 		if x != "" {
 			x += ","
 		}
