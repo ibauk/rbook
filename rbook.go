@@ -15,7 +15,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const apptitle = "RBook v1.7"
+const apptitle = "RBook v1.8"
 const progdesc = `
 I print rally books using data supplied by Rallymasters in a standard format
 `
@@ -24,15 +24,22 @@ I print rally books using data supplied by Rallymasters in a standard format
 const smAskPointsVar = 1
 const smAskPointsMult = 2
 
-var yml = flag.String("cfg", "", "Name of the YAML configuration")
+var yml = flag.String("cfg", "std.yml", "Name of the YAML configuration")
 var showusage = flag.Bool("?", false, "Show this help")
 var outputfile = flag.String("book", "", "Output filename. Default to YAML config")
 var outputGPX = flag.String("gpx", "", "Output GPX. Default to YAML config")
+var database = flag.String("db", "", "ScoreMaster database")
 var verbose = flag.Bool("v", false, "verbose mode")
 
 var DBH *sql.DB
 var OUTF *os.File
 var GPXF *os.File
+
+func checkerr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
 
 func fileExists(x string) bool {
 
@@ -40,6 +47,20 @@ func fileExists(x string) bool {
 	//return !errors.Is(err, os.ErrNotExist)
 	return err == nil
 
+}
+
+func getStringFromDB(sqlx string, defval string) string {
+
+	rows, err := DBH.Query(sqlx)
+	checkerr(err)
+	defer rows.Close()
+	if rows.Next() {
+		var res string
+		err = rows.Scan(&res)
+		checkerr(err)
+		return res
+	}
+	return defval
 }
 
 func init() {
@@ -68,8 +89,23 @@ func main() {
 
 	fmt.Printf("Project folder is %v\n", CFG.ProjectFolder)
 
+	if *database != "" {
+		CFG.Database = *database
+	}
+
+	var err error
+	DBH, err = sql.Open("sqlite3", CFG.Database)
+	checkerr(err)
+	defer DBH.Close()
+
+	CFG.Title = getStringFromDB("SELECT RallyTitle FROM rallyparams", CFG.Title)
+
 	if *outputfile != "" && *outputfile != "none" {
-		xfile = filepath.Join(CFG.OutputFolder, *outputfile)
+		if strings.ContainsRune(*outputfile, filepath.Separator) {
+			xfile = *outputfile
+		} else {
+			xfile = filepath.Join(CFG.OutputFolder, *outputfile)
+		}
 		fmt.Printf("\nBook title: %v\n%v\nGenerating %v \n", CFG.Title, CFG.Description, xfile)
 		OUTF, _ = os.Create(xfile)
 		defer OUTF.Close()
@@ -80,21 +116,21 @@ func main() {
 	}
 
 	if *outputGPX != "" {
-		yfile := filepath.Join(CFG.OutputFolder, *outputGPX)
+		yfile := ""
+		if strings.ContainsRune(*outputGPX, filepath.Separator) {
+			yfile = *outputGPX
+		} else {
+			yfile = filepath.Join(CFG.OutputFolder, *outputGPX)
+		}
+
 		fmt.Printf("Generating GPX %v\n", yfile)
-		fmt.Print("Bonuses in config streams including 'emitgpx: true' are emitted to GPX\n")
+		fmt.Print("Bonuses in config streams including 'emitGPX: true' are emitted to GPX\n")
 		GPXF, _ = os.Create(yfile)
 		defer GPXF.Close()
 		GPXF.WriteString(gpxheader)
 	}
 
 	fmt.Println()
-	var err error
-	DBH, err = sql.Open("sqlite3", CFG.Database)
-	if err != nil {
-		panic(err)
-	}
-	defer DBH.Close()
 
 	fmt.Fprint(OUTF, strings.ReplaceAll(htmlhead1, "RBook doc", CFG.Title))
 	fmt.Fprint(OUTF, css_reboot)
@@ -259,12 +295,6 @@ func emitBonuses(s int, sf string, nopage bool, emitGPX bool) {
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
-		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		if OUTF != nil {
-			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-			// OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
-		}
-
 	}
 	OUTF.WriteString("</div>")
 	fmt.Printf("\n%v bonus records processed [%v]\n", NRex, sf)
@@ -352,11 +382,6 @@ func emitCombos(s int, sf string) {
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
-		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		if OUTF != nil {
-			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-			// OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
-		}
 	}
 	if OUTF != nil {
 		OUTF.WriteString("</div>")
@@ -449,12 +474,6 @@ func emitEntrants(s int, sf string, nopage bool) {
 	}
 	if NLines < CFG.Streams[s].LinesPerPage {
 		NLines++
-		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
-		if OUTF != nil {
-			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-			// OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
-		}
-
 	}
 	if OUTF != nil {
 		OUTF.WriteString("</div>")

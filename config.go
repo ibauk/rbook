@@ -73,14 +73,13 @@ var css_a4landscape string
 type BonusStream struct {
 	StreamID     string `yaml:"streamid"`
 	Type         string `yaml:"type"` // bonus, combo, static
-	WhereString  string `yaml:"wherestring"`
-	BonusOrder   string `yaml:"bonusorder"`
-	MaxPerLine   int    `yaml:"maxperline"`
-	LinesPerPage int    `yaml:"linesperpage"`
-	BrPerLine    int    `yaml:"brperline"`
+	WhereString  string `yaml:"whereSQL"`
+	BonusOrder   string `yaml:"orderByField"`
+	MaxPerLine   int    `yaml:"colsPerRow"`
+	LinesPerPage int    `yaml:"rowsPerPage"`
 	TemplateID   string `yaml:"template"`
-	NoPageTop    bool   `yaml:"nopagetop"`
-	EmitGPX      bool   `yaml:"emitgpx"`
+	NoPageTop    bool   `yaml:"noPageTop"`
+	EmitGPX      bool   `yaml:"emitGPX"`
 }
 
 var CFG struct {

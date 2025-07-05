@@ -27,7 +27,7 @@ body {
 .page::after {
   display: block;
   text-align: center;
-  padding: 5em;
+  padding: 3em;
   content: " Page - " counter(page);
   font-size: 14pt;
 }
@@ -97,7 +97,8 @@ p {
   display: inline-block;
 }
 .rules {
-  width: 90%;
+  width: 100%;
+  font-size: 12pt;
   text-align: justify;
   p.closer {
     margin: 0 1em 0 1em;
