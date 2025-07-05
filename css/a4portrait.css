@@ -11,22 +11,26 @@
  * Improve them if you must but beware.
  */
 
- @page {
-	margin-top: 0;
-	margin-bottom: 0;
+@page {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 body {
-	width: 210mm; /*297mm;*/
-
+  width: 210mm; /*297mm;*/
 }
 
 .newpage {
-	page-break-after: always;
+  page-break-after: always;
 }
 
-
 @media print {
-	@page {size: A4 portrait; margin:0;}
-	html, body {height: 100%;}
+  @page {
+    size: A4 portrait;
+    
+  }
+  html,
+  body {
+    height: 100%;
+  }
 }

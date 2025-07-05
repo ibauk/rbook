@@ -8,10 +8,10 @@ description: A4 portrait, 2 column photos
 
 
 # Standard filepath specification, relative to CWD
-projectfolder: \projects\rbook\projects\bbl22
-outputfolder: \sm-installs\bbl22
+projectFolder: projects/bbl22
+outputFolder: ./
 outputfile: BBL22Rallybook.html
-database: \sm-installs\bbl22\sm\ScoreMaster.db
+database: /home/bob/Documents/ScoreMasterBBL22.db
 
 # URL format, relative to output folder
 imagefolder: sm/images/
@@ -35,7 +35,8 @@ streams:
       bonusorder:   'substr(BriefDesc,-3,1)',
       maxperline:   2,
       linesperpage: 3,
-      brperline: 23
+      brperline: 23,
+      emitgpx: true
     }
   - { 
       streamid:     coordslist,

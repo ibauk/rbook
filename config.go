@@ -26,21 +26,25 @@ const EntrantSQL = `SELECT EntrantID,IfNull(RiderName,''),IfNull(PillionName,'')
 
 const htmlhead1 = `
 <!DOCTYPE html>
+<!-- htmlhead1 -->
 <html lang="en">
 
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1" >
 <title>RBook doc</title>
+<!-- end htmlhead1 -->
 <style>
 `
 
 const htmlhead2 = `
 </style>
+<!-- htmlhead2 -->
 </head>
 
 <body>
 <div class="pages">
+<!-- end htmlhead2  -->
 `
 
 const htmlfoot = `

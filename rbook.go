@@ -127,13 +127,12 @@ func main() {
 					fmt.Printf("Streaming %v\n", sf[1])
 				}
 				fmt.Fprint(OUTF, `<div class="stream`+sf[1]+`">`)
-				if v.Type == type_combo {
-					//fmt.Printf("Calling combos %v\n", v.StreamID)
+				switch v.Type {
+				case type_combo:
 					emitCombos(sx, sf[1])
-				} else if v.Type == type_entrant {
+				case type_entrant:
 					emitEntrants(sx, sf[1], v.NoPageTop)
-				} else {
-					//fmt.Printf("Calling bonuses %v\n", v.StreamID)
+				default:
 					emitBonuses(sx, sf[1], v.NoPageTop, v.EmitGPX)
 				}
 				fmt.Fprint(OUTF, `</div>`)
@@ -194,11 +193,12 @@ func emitBonuses(s int, sf string, nopage bool, emitGPX bool) {
 		B.HasWaffle = B.Waffle != ""
 		B.HasNotes = B.Notes != ""
 		B.AskPoints = askPoints == smAskPointsVar
-		if askPoints == smAskPointsVar {
+		switch askPoints {
+		case smAskPointsVar:
 			B.Points = CFG.AskPointsVarPrefix + strconv.Itoa(PointsVal)
-		} else if askPoints == smAskPointsMult {
+		case smAskPointsMult:
 			B.Points = CFG.AskPointsMultPrefix + strconv.Itoa(PointsVal)
-		} else {
+		default:
 			B.Points = strconv.Itoa(PointsVal)
 		}
 		if GPXF != nil && emitGPX {
@@ -262,7 +262,7 @@ func emitBonuses(s int, sf string, nopage bool, emitGPX bool) {
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
 		if OUTF != nil {
 			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+			// OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
 		}
 
 	}
@@ -297,7 +297,7 @@ func emitCombos(s int, sf string) {
 	}
 	NRex := 0
 	NLines := -1
-	if OUTF != nil {
+	if OUTF != nil && false {
 		OUTF.WriteString("<div class='page'>")
 	}
 	for rows.Next() {
@@ -310,6 +310,10 @@ func emitCombos(s int, sf string) {
 			fmt.Printf("%v\n", err)
 		}
 
+		if B.MinimumTicks > 0 {
+			expandComboPoints(B)
+			fmt.Printf("%v %v %v\n", B.ComboID, B.MinimumTicks, B.ScorePoints)
+		}
 		B.StreamID = CFG.Streams[s].StreamID
 
 		if CFG.Streams[s].MaxPerLine > 0 {
@@ -351,7 +355,7 @@ func emitCombos(s int, sf string) {
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
 		if OUTF != nil {
 			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+			// OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
 		}
 	}
 	if OUTF != nil {
@@ -448,7 +452,7 @@ func emitEntrants(s int, sf string, nopage bool) {
 		n := (CFG.Streams[s].LinesPerPage - NLines) * CFG.Streams[s].BrPerLine
 		if OUTF != nil {
 			OUTF.WriteString("\n<!-- " + fmt.Sprintf("NL=%v, LPP=%v, n=%v", NLines, CFG.Streams[s].LinesPerPage, n) + " -->\n")
-			OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
+			// OUTF.WriteString("<p>" + strings.Repeat("<br>", n) + "</p>")
 		}
 
 	}
@@ -474,6 +478,25 @@ func emitTopTail(F *os.File, xfile string) {
 		fmt.Printf("emitTopTail [%v] %v\n", xfile, err)
 	}
 
+}
+
+func expandComboPoints(B *Combo) {
+
+	// This expects to have a properly completed BonusList and ScorePoints
+	if B.MinimumTicks < 1 {
+		return
+	}
+	bl := strings.Split(B.BonusList, ",")
+	sp := strings.Split(B.ScorePoints, ",")
+	x := ""
+	for n := B.MinimumTicks; n <= len(bl); n++ {
+		fmt.Printf("%v now\n", n)
+		if x != "" {
+			x += ","
+		}
+		x += fmt.Sprintf("%v=%v", n, sp[n-B.MinimumTicks])
+	}
+	B.ScorePoints = x
 }
 
 func setFlags(b *Bonus) {
