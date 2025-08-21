@@ -48,6 +48,22 @@ body {
 p {
   margin: 1em;
 }
+p.center {
+  text-align: center;
+}
+ol {
+  margin: 1em;
+  list-style-position: inside;
+  li {
+    margin: 0 0 .5em 0;
+  }
+}
+.subject {
+  padding: 2px .6em 2px .6em;
+  background-color: lightgray;
+  color: black;
+  font-weight: bold;
+}
 .combos {
   display: block;
   padding: 3em;
@@ -63,25 +79,24 @@ p {
   flex-wrap: wrap;
 }
 .bonus {
-  width: 49%;
+  width: 89%;
   display: inline-block;
-  margin-bottom: 3%; 
+  margin-bottom: 3%;
 }
-.Title {
+.Title1 {
   display: inline-block;
-  width: 10em;
+  width: 20em;
 }
-.BonusID,
-.Points {
+.BonusID {
   font-size: larger;
   font-weight: bold;
 }
-.bonusimage {
+.bonusimage1 {
   width: 100%;
 }
 .bonusimage img {
-  width: 90%;
-  height: 290px;
+  /*width: 90%;*/
+  max-height: 280px;
 }
 .coordtable {
   display: flex;
@@ -90,7 +105,6 @@ p {
 .streamcoordslist {
   display: block;
   width: 100%;
-
 }
 .coordtable .id {
   width: 5em;
@@ -106,5 +120,56 @@ p {
   ol {
     list-style-position: inside;
     margin: 0 1em 0 1em;
+  }
+}
+
+.bonus1 {
+  display: grid;
+  grid-template-areas:
+    "bonusid  points points title title title"
+    "image image image image waffle flags"
+    "notes notes notes notes notes notes";
+  border: 2px solid;
+  padding: 5px;
+  margin: 0.5em;
+
+  .BonusID {
+    grid-area: bonusid;
+    margin: 0 1em 0 0;
+    font-weight: bold;
+  }
+  .Title {
+    grid-area: title;
+    text-align: right;
+    margin: 0 .5em 0 0;
+    font-size: larger;
+  }
+  .flags {
+    grid-area: flags;
+    width: 70px;
+    .icon {
+      height: 64px;
+      width: 64px;
+    }
+  }
+  .icon {
+    margin: .5em 0 0 0;
+  }
+  .Points {
+    grid-area: points;
+    font-size: larger;
+    text-align: right;
+  }
+  .bonusimage {
+    grid-area: image;
+    margin: 0.5em 1em 1em 0;
+  }
+  .notes {
+    grid-area: notes;
+  }
+  .waffle {
+    grid-area: waffle;
+    margin: 1em 0 0 0;
+    font-style: italic;
   }
 }
