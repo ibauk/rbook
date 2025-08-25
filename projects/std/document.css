@@ -125,6 +125,7 @@ ol {
 
 .bonus1 {
   display: grid;
+  grid-template-columns: auto auto auto;
   grid-template-areas:
     "bonusid  points points title title title"
     "image image image image waffle flags"
@@ -146,10 +147,10 @@ ol {
   }
   .flags {
     grid-area: flags;
-    width: 70px;
+    max-width: 70px;
     .icon {
       height: 64px;
-      width: 64px;
+      max-width: 64px;
     }
   }
   .icon {
